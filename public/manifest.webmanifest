@@ -1,0 +1,16 @@
+{
+  "name": "HEIC コンバーター",
+  "short_name": "HEIC変換",
+  "description": "iPhoneのHEIC写真をブラウザの中だけでJPG/PNGに一括変換。画像はどこにも送信されません。",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#1e1b4b",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
