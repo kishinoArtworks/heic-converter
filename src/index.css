@@ -1,20 +1,29 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+/* 配色: 白を基調に、ベージュ（面）とモスグリーン（差し色）のオーガニックな組み合わせ */
 :root {
-  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', 'Yu Gothic UI', 'Hiragino Sans', 'Noto Sans JP', system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  
-  --bg-gradient-start: #0f172a;
-  --bg-gradient-end: #1e1b4b;
-  --primary: #8b5cf6;
-  --primary-hover: #7c3aed;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-  --danger: #ef4444;
+
+  --bg: #faf8f4;              /* 地: 温かみのある白 */
+  --bg-deep: #f1ebe1;         /* 地の奥: 淡いベージュ */
+  --surface: #ffffff;         /* カード面 */
+  --surface-soft: #f6f1e8;    /* 控えめな面: ベージュ */
+  --beige: #d9c3a5;           /* ベージュ（布の色） */
+  --beige-deep: #c4a982;
+  --taupe: #b8a898;           /* グレージュ（ラグの色） */
+  --primary: #6b7d5a;         /* モスグリーン */
+  --primary-hover: #5a6b4a;
+  --primary-soft: #e7ecdf;    /* モスグリーンの淡い面 */
+  --text-main: #3b3630;       /* 温かみのある墨色 */
+  --text-muted: #8a8177;
+  --text: var(--text-main);
+  --border: #e6dfd3;
+  --border-strong: #d3c9b9;
+  --shadow: 0 8px 24px rgba(90, 74, 50, 0.08);
+  --danger: #b5544a;          /* 落ち着いたテラコッタ */
+  --danger-soft: #f6e7e4;
 }
 
 body {
@@ -23,10 +32,12 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
-  background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+  background: linear-gradient(160deg, var(--bg) 0%, var(--bg-deep) 100%);
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 #root {
@@ -49,9 +60,9 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--glass-border);
+  background: var(--border-strong);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--taupe);
 }
