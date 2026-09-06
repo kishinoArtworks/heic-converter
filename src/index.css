@@ -17,6 +17,7 @@
   --primary-hover: #5a6b4a;
   --primary-soft: #e7ecdf;    /* モスグリーンの淡い面 */
   --text-main: #3b3630;       /* 温かみのある墨色 */
+  --title: #7a563d;           /* タイトル: 焦げ茶（ユーザー指定） */
   --text-muted: #8a8177;
   --text: var(--text-main);
   --border: #e6dfd3;
