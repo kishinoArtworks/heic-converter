@@ -1,16 +1,17 @@
 {
-  "name": "heic-converter",
+  "name": "iphone-photo-converter",
   "private": true,
   "version": "1.0.0",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
     "electron:start": "electron .",
-    "electron:build": "npm run build && electron-packager . \"HEIC Converter\" --platform=win32 --arch=x64 --out=dist-electron --overwrite",
+    "electron:build": "npm run build && electron-builder --win --x64 --publish never",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "icons": "python scripts/make-icons.py"
   },
   "dependencies": {
     "file-saver": "^2.0.5",
@@ -21,7 +22,6 @@
     "react-dom": "^19.2.6"
   },
   "devDependencies": {
-    "@electron/packager": "^20.0.0",
     "@eslint/js": "^10.0.1",
     "@types/file-saver": "^2.0.7",
     "@types/node": "^24.12.3",
@@ -40,17 +40,42 @@
     "vite": "^5.4.21"
   },
   "build": {
-    "appId": "com.rigen.heicconverter",
-    "productName": "HEIC Converter",
+    "appId": "com.kishino.iphone-photo-converter",
+    "productName": "iPhone写真変換",
     "directories": {
-      "output": "dist-electron"
+      "output": "dist-electron",
+      "buildResources": "build"
     },
     "files": [
       "dist/**/*",
-      "electron/**/*"
+      "electron/**/*",
+      "build/icon.png",
+      "package.json"
     ],
     "win": {
-      "target": "portable"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "iphone-photo-converter-${version}-win-x64.${ext}"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "runAfterFinish": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "iPhone写真変換"
     }
-  }
+  },
+  "productName": "iPhone写真変換",
+  "description": "iPhoneのHEIC写真をブラウザの中だけでJPG・PNG・WebPに一括変換",
+  "author": "kishino",
+  "license": "MIT",
+  "homepage": "https://kishinoartworks.github.io/heic-converter/"
 }

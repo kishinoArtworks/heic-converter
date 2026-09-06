@@ -19,18 +19,11 @@
   margin-bottom: 0.5rem;
 }
 
-.logo-icon-bg {
-  background: linear-gradient(135deg, var(--primary), #a855f7);
-  padding: 0.75rem;
+.logo-img {
+  width: 56px;
+  height: 56px;
   border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
-}
-
-.logo-icon {
-  color: white;
 }
 
 h1 {

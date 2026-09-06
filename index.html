@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HEIC コンバーター｜iPhone写真をブラウザだけでJPG/PNGに一括変換</title>
-    <meta name="description" content="iPhoneのHEIC写真をJPG/PNGに一括変換。変換はブラウザの中だけで完結し、画像はどこにも送信されません。インストール不要・無料。" />
+    <title>iPhone写真変換｜HEICをブラウザだけでJPG・PNG・WebPに一括変換</title>
+    <meta name="description" content="iPhoneのHEIC写真をJPG・PNG・WebPに一括変換。変換はブラウザの中だけで完結し、画像はどこにも送信されません。インストール不要・無料。" />
     <meta name="theme-color" content="#1e1b4b" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="HEIC コンバーター｜iPhone写真をブラウザだけでJPG/PNGに一括変換" />
+    <meta property="og:title" content="iPhone写真変換｜HEICをブラウザだけでJPG・PNG・WebPに一括変換" />
     <meta property="og:description" content="変換はブラウザの中だけで完結。画像はどこにも送信されません。インストール不要・無料。" />
     <meta property="og:image" content="/og-image.png" />
     <meta name="twitter:card" content="summary_large_image" />
@@ -21,7 +21,7 @@
     <script src="/heic2any.js"></script>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      if ('serviceWorker' in navigator) {
+      if ('serviceWorker' in navigator && location.protocol !== 'file:') {
         window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}); });
       }
     </script>

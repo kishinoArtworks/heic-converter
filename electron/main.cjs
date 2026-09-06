@@ -5,6 +5,8 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 900,
     height: 900,
+    title: 'iPhone写真変換',
+    icon: path.join(__dirname, '../build/icon.png'),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true

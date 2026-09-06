@@ -1,7 +1,7 @@
 {
-  "name": "HEIC コンバーター",
-  "short_name": "HEIC変換",
-  "description": "iPhoneのHEIC写真をブラウザの中だけでJPG/PNGに一括変換。画像はどこにも送信されません。",
+  "name": "iPhone写真変換",
+  "short_name": "iPhone写真変換",
+  "description": "iPhoneのHEIC写真をブラウザの中だけでJPG・PNG・WebPに一括変換。画像はどこにも送信されません。",
   "lang": "ja",
   "start_url": "./",
   "scope": "./",
