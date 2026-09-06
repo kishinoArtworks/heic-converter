@@ -2,18 +2,11 @@ import React, { useState, useCallback, useRef } from 'react';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { UploadCloud, Image as ImageIcon, Loader2, Download, Trash2, CheckCircle2 } from 'lucide-react';
+import { FORMATS, PNG_COLORS, GIF_COLORS, INPUT_EXT, ACCEPT, extOf, convertImage } from './convert';
+import type { Format } from './convert';
 import './App.css';
 
-type Format = 'image/png' | 'image/jpeg' | 'image/webp';
 type DownloadMethod = 'zip' | 'multiple' | 'manual';
-
-const FORMATS: { value: Format; label: string; ext: string }[] = [
-  { value: 'image/png', label: 'PNG', ext: 'png' },
-  { value: 'image/jpeg', label: 'JPG', ext: 'jpg' },
-  { value: 'image/webp', label: 'WebP', ext: 'webp' },
-];
-
-const extOf = (format: Format) => FORMATS.find(f => f.value === format)!.ext;
 
 interface FileItem {
   id: string;
@@ -23,44 +16,18 @@ interface FileItem {
   error?: string;
 }
 
-interface Heic2AnyOptions {
-  blob: Blob;
-  toType: 'image/png' | 'image/jpeg';
-  quality?: number;
-}
-type Heic2Any = (options: Heic2AnyOptions) => Promise<Blob | Blob[]>;
-
-const heic2any = (): Heic2Any => (window as unknown as { heic2any: Heic2Any }).heic2any;
-
-// heic2any は PNG/JPG しか書き出せないので、WebP は一度 PNG にしてから Canvas で再エンコードする
-async function pngToWebp(png: Blob): Promise<Blob> {
-  const bitmap = await createImageBitmap(png);
-  const canvas = document.createElement('canvas');
-  canvas.width = bitmap.width;
-  canvas.height = bitmap.height;
-  canvas.getContext('2d')!.drawImage(bitmap, 0, 0);
-  bitmap.close();
-  const out = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/webp', 0.85));
-  if (!out || out.type !== 'image/webp') {
-    throw new Error('このブラウザはWebPの書き出しに対応していません');
-  }
-  return out;
-}
-
-async function convertOne(file: File, format: Format): Promise<Blob> {
-  const toType = format === 'image/webp' ? 'image/png' : format;
-  const result = await heic2any()({ blob: file, toType, quality: 0.8 });
-  const blob = Array.isArray(result) ? result[0] : result;
-  return format === 'image/webp' ? pngToWebp(blob) : blob;
-}
-
 function App() {
   const [files, setFiles] = useState<FileItem[]>([]);
   const [format, setFormat] = useState<Format>('image/png');
+  const [pngColors, setPngColors] = useState(0);
+  const [gifColors, setGifColors] = useState(256);
+  const [quality, setQuality] = useState(85);
   const [downloadMethod, setDownloadMethod] = useState<DownloadMethod>('zip');
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const colors = format === 'image/png' ? pngColors : format === 'image/gif' ? gifColors : 0;
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -82,13 +49,11 @@ function App() {
   }, []);
 
   const processFiles = (newFiles: FileList | File[]) => {
-    const heicFiles = Array.from(newFiles).filter(
-      file => /\.(heic|heif)$/i.test(file.name)
-    );
+    const imageFiles = Array.from(newFiles).filter(file => INPUT_EXT.test(file.name));
 
-    if (heicFiles.length === 0) return;
+    if (imageFiles.length === 0) return;
 
-    const newItems: FileItem[] = heicFiles.map(file => ({
+    const newItems: FileItem[] = imageFiles.map(file => ({
       id: Math.random().toString(36).substring(7),
       file,
       status: 'pending'
@@ -120,6 +85,16 @@ function App() {
     setFiles(prev => prev.filter(f => f.id !== id));
   };
 
+  // 形式や色数を変えたら、変換済みのものも作り直せるように待機中に戻す
+  const resetDone = () => {
+    setFiles(prev => prev.map(f => (f.status === 'done' ? { ...f, status: 'pending', blob: undefined } : f)));
+  };
+
+  const changeFormat = (f: Format) => { setFormat(f); resetDone(); };
+  const changePngColors = (n: number) => { setPngColors(n); resetDone(); };
+  const changeGifColors = (n: number) => { setGifColors(n); resetDone(); };
+  const changeQuality = (n: number) => { setQuality(n); resetDone(); };
+
   const convertFiles = async () => {
     if (files.length === 0) return;
     setIsProcessing(true);
@@ -133,7 +108,7 @@ function App() {
       setFiles([...updatedFiles]);
 
       try {
-        updatedFiles[i].blob = await convertOne(updatedFiles[i].file, format);
+        updatedFiles[i].blob = await convertImage(updatedFiles[i].file, { format, colors, quality });
         updatedFiles[i].status = 'done';
       } catch (err: unknown) {
         updatedFiles[i].status = 'error';
@@ -155,7 +130,7 @@ function App() {
 
   const downloadFiles = async (filesToDownload: FileItem[], forceIndividual = false) => {
     const ext = extOf(format);
-    const rename = (name: string) => name.replace(/\.(heic|heif)$/i, `.${ext}`);
+    const rename = (name: string) => name.replace(INPUT_EXT, '') + `.${ext}`;
 
     if (filesToDownload.length === 1 || downloadMethod === 'multiple' || forceIndividual) {
       filesToDownload.forEach(item => {
@@ -176,9 +151,9 @@ function App() {
       <header className="header">
         <div className="logo-container">
           <img src="./icon-192.png" alt="" className="logo-img" width={56} height={56} />
-          <h1>iPhone写真変換</h1>
+          <h1>画像形式変換器</h1>
         </div>
-        <p className="subtitle">HEICファイルをドロップして、ボタン一発でPNG・JPG・WebPに変換します。</p>
+        <p className="subtitle">HEIC・JPG・PNG・WebPなどの画像をドロップして、ボタン一発でPNG・JPG・WebP・GIFに変換します。</p>
         <p className="privacy-note">変換はこのブラウザの中だけで完結します。画像はどこにも送信されません。</p>
       </header>
 
@@ -191,7 +166,7 @@ function App() {
                 <button
                   key={f.value}
                   className={`toggle-btn ${format === f.value ? 'active' : ''}`}
-                  onClick={() => setFormat(f.value)}
+                  onClick={() => changeFormat(f.value)}
                   disabled={isProcessing}
                 >
                   {f.label}
@@ -199,6 +174,54 @@ function App() {
               ))}
             </div>
           </div>
+
+          {format === 'image/png' && (
+            <div className="format-selector" style={{ marginTop: '1rem' }}>
+              <span className="label">色数:</span>
+              <select
+                className="color-select"
+                value={pngColors}
+                onChange={e => changePngColors(Number(e.target.value))}
+                disabled={isProcessing}
+                title="フルカラーはPNG-24、色数を選ぶと減色したPNG-8になります"
+              >
+                {PNG_COLORS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+              </select>
+            </div>
+          )}
+
+          {format === 'image/gif' && (
+            <div className="format-selector" style={{ marginTop: '1rem' }}>
+              <span className="label">色数:</span>
+              <select
+                className="color-select"
+                value={gifColors}
+                onChange={e => changeGifColors(Number(e.target.value))}
+                disabled={isProcessing}
+                title="GIFは最大256色。少なくするほどファイルが小さくなります"
+              >
+                {GIF_COLORS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+              </select>
+            </div>
+          )}
+
+          {(format === 'image/jpeg' || format === 'image/webp') && (
+            <div className="format-selector" style={{ marginTop: '1rem' }}>
+              <span className="label">画質:</span>
+              <div className="quality-control" title="低いほどファイルは小さく、画質は粗くなります">
+                <input
+                  type="range"
+                  min={10}
+                  max={100}
+                  step={5}
+                  value={quality}
+                  onChange={e => changeQuality(Number(e.target.value))}
+                  disabled={isProcessing}
+                />
+                <span className="quality-value">{quality}%</span>
+              </div>
+            </div>
+          )}
 
           <div className="format-selector" style={{ marginTop: '1rem' }}>
             <span className="label">保存方法:</span>
@@ -244,15 +267,15 @@ function App() {
             ref={fileInputRef}
             style={{ display: 'none' }}
             multiple
-            accept=".heic,.heif,image/heic,image/heif"
+            accept={ACCEPT}
             onChange={handleFileInput}
           />
           <div className="drop-content">
             <div className="upload-icon-wrapper">
               <UploadCloud size={48} className="upload-icon" />
             </div>
-            <h2>HEICファイルをここにドロップ</h2>
-            <p>またはクリックしてファイルを選択</p>
+            <h2>画像ファイルをここにドロップ</h2>
+            <p>またはクリックしてファイルを選択（HEIC / JPG / PNG / WebP / GIF / BMP）</p>
           </div>
         </div>
 

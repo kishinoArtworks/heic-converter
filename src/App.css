@@ -395,3 +395,41 @@ h1 {
 .footer .sep {
   margin: 0 0.5rem;
 }
+
+.color-select {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.color-select:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.color-select option {
+  background: #1e1b4b;
+  color: #fff;
+}
+
+.quality-control {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.quality-control input[type="range"] {
+  width: 160px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.quality-value {
+  min-width: 3.2em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}

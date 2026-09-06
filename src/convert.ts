@@ -1,0 +1,132 @@
+// 画像の読み込みと書き出し（すべてブラウザ内で完結する）
+import { GIFEncoder, quantize, applyPalette } from 'gifenc';
+import UPNG from 'upng-js';
+
+export type Format = 'image/png' | 'image/jpeg' | 'image/webp' | 'image/gif';
+
+export const FORMATS: { value: Format; label: string; ext: string }[] = [
+  { value: 'image/png', label: 'PNG', ext: 'png' },
+  { value: 'image/jpeg', label: 'JPG', ext: 'jpg' },
+  { value: 'image/webp', label: 'WebP', ext: 'webp' },
+  { value: 'image/gif', label: 'GIF', ext: 'gif' },
+];
+
+// 色数の選択肢。0 はフルカラー（PNG-24）
+export const PNG_COLORS: { value: number; label: string }[] = [
+  { value: 0, label: 'フルカラー (PNG-24)' },
+  { value: 256, label: '256色 (PNG-8)' },
+  { value: 128, label: '128色' },
+  { value: 64, label: '64色' },
+  { value: 32, label: '32色' },
+  { value: 16, label: '16色' },
+];
+export const GIF_COLORS: { value: number; label: string }[] = [256, 128, 64, 32, 16, 8].map(n => ({ value: n, label: `${n}色` }));
+
+export interface ConvertOptions {
+  format: Format;
+  colors: number;  // PNG / GIF の色数。0 = フルカラー
+  quality: number; // JPG / WebP の画質（10〜100）
+}
+
+// 読み込める形式（拡張子で判定）
+export const INPUT_EXT = /\.(heic|heif|png|jpe?g|webp|gif|bmp|avif)$/i;
+const HEIC_EXT = /\.(heic|heif)$/i;
+export const ACCEPT = '.heic,.heif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif,image/*';
+
+export const extOf = (format: Format) => FORMATS.find(f => f.value === format)!.ext;
+
+interface Heic2AnyOptions {
+  blob: Blob;
+  toType: 'image/png' | 'image/jpeg';
+  quality?: number;
+}
+type Heic2Any = (options: Heic2AnyOptions) => Promise<Blob | Blob[]>;
+const heic2any = (): Heic2Any => (window as unknown as { heic2any: Heic2Any }).heic2any;
+
+// 画像を ImageBitmap に読み込む。HEIC は heic2any でいったん PNG にしてから
+async function decode(file: File): Promise<ImageBitmap> {
+  let source: Blob = file;
+  if (HEIC_EXT.test(file.name)) {
+    const result = await heic2any()({ blob: file, toType: 'image/png' });
+    source = Array.isArray(result) ? result[0] : result;
+  }
+  try {
+    return await createImageBitmap(source);
+  } catch {
+    throw new Error('この画像を読み込めませんでした（壊れているか、未対応の形式です）');
+  }
+}
+
+function draw(bitmap: ImageBitmap, whiteBackground: boolean): HTMLCanvasElement {
+  const canvas = document.createElement('canvas');
+  canvas.width = bitmap.width;
+  canvas.height = bitmap.height;
+  const ctx = canvas.getContext('2d')!;
+  if (whiteBackground) {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+  ctx.drawImage(bitmap, 0, 0);
+  bitmap.close();
+  return canvas;
+}
+
+function pixels(canvas: HTMLCanvasElement): ImageData {
+  return canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height);
+}
+
+// ブラウザ標準の Canvas で書き出す（JPG / WebP / PNG-24）
+async function encodeWithCanvas(canvas: HTMLCanvasElement, format: Format, quality: number): Promise<Blob> {
+  const q = format === 'image/png' ? undefined : Math.min(100, Math.max(10, quality)) / 100;
+  const out = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, format, q));
+  if (!out || out.type !== format) {
+    throw new Error(`このブラウザは${extOf(format).toUpperCase()}の書き出しに対応していません`);
+  }
+  return out;
+}
+
+// PNG-8（減色）は UPNG.js で書き出す
+function encodePng8(img: ImageData, colors: number): Blob {
+  const rgba = new Uint8Array(img.data.length);
+  rgba.set(img.data);
+  const buf = UPNG.encode([rgba.buffer], img.width, img.height, colors);
+  return new Blob([new Uint8Array(buf)], { type: 'image/png' });
+}
+
+// GIF（減色）は gifenc で書き出す。半透明は「透明か不透明か」に丸める
+function encodeGif(img: ImageData, colors: number): Blob {
+  const data = img.data;
+  let hasAlpha = false;
+  for (let i = 3; i < data.length; i += 4) {
+    if (data[i] < 128) { hasAlpha = true; break; }
+  }
+  const format = hasAlpha ? 'rgba4444' : 'rgb565';
+  // 透明ピクセル用に1色ぶん空けておく
+  const palette = quantize(data, hasAlpha ? colors - 1 : colors, { format, oneBitAlpha: true });
+  const index = applyPalette(data, palette, format);
+  let transparentIndex = -1;
+  if (hasAlpha) {
+    transparentIndex = palette.length;
+    palette.push([0, 0, 0, 0]);
+    for (let i = 0, p = 0; i < data.length; i += 4, p++) {
+      if (data[i + 3] < 128) index[p] = transparentIndex;
+    }
+  }
+  const gif = GIFEncoder();
+  gif.writeFrame(index, img.width, img.height, {
+    palette,
+    transparent: hasAlpha,
+    transparentIndex: hasAlpha ? transparentIndex : undefined,
+  });
+  gif.finish();
+  const bytes = gif.bytes();
+  return new Blob([new Uint8Array(bytes)], { type: 'image/gif' });
+}
+
+export async function convertImage(file: File, { format, colors, quality }: ConvertOptions): Promise<Blob> {
+  const bitmap = await decode(file);
+  const canvas = draw(bitmap, format === 'image/jpeg'); // JPG は透明を持てないので白で埋める
+  if (format === 'image/gif') return encodeGif(pixels(canvas), colors);
+  if (format === 'image/png' && colors > 0) return encodePng8(pixels(canvas), colors);
+  return encodeWithCanvas(canvas, format, quality);
+}

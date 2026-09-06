@@ -1,5 +1,5 @@
 {
-  "name": "iphone-photo-converter",
+  "name": "image-format-converter",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -15,11 +15,13 @@
   },
   "dependencies": {
     "file-saver": "^2.0.5",
+    "gifenc": "^1.0.3",
     "heic2any": "^0.0.4",
     "jszip": "^3.10.1",
     "lucide-react": "^1.17.0",
     "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "react-dom": "^19.2.6",
+    "upng-js": "^2.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -27,6 +29,7 @@
     "@types/node": "^24.12.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@types/upng-js": "^2.1.5",
     "@vitejs/plugin-react": "^4.7.0",
     "electron": "^42.3.2",
     "electron-builder": "^26.8.1",
@@ -40,8 +43,8 @@
     "vite": "^5.4.21"
   },
   "build": {
-    "appId": "com.kishino.iphone-photo-converter",
-    "productName": "iPhone写真変換",
+    "appId": "com.kishino.image-format-converter",
+    "productName": "画像形式変換器",
     "directories": {
       "output": "dist-electron",
       "buildResources": "build"
@@ -62,7 +65,7 @@
         }
       ],
       "icon": "build/icon.ico",
-      "artifactName": "iphone-photo-converter-${version}-win-x64.${ext}"
+      "artifactName": "image-format-converter-${version}-win-x64.${ext}"
     },
     "nsis": {
       "oneClick": true,
@@ -70,11 +73,11 @@
       "runAfterFinish": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "iPhone写真変換"
+      "shortcutName": "画像形式変換器"
     }
   },
-  "productName": "iPhone写真変換",
-  "description": "iPhoneのHEIC写真をブラウザの中だけでJPG・PNG・WebPに一括変換",
+  "productName": "画像形式変換器",
+  "description": "HEIC・JPG・PNG・WebP・GIF・BMPをブラウザの中だけでPNG・JPG・WebPに一括変換",
   "author": "kishino",
   "license": "MIT",
   "homepage": "https://kishinoartworks.github.io/heic-converter/"

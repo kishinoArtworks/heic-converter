@@ -8,7 +8,7 @@ PUB = os.path.join(ROOT, 'public')
 BUILD = os.path.join(ROOT, 'build')
 os.makedirs(BUILD, exist_ok=True)
 
-APP_NAME = 'iPhone写真変換'
+APP_NAME = '画像形式変換器'
 BG1, BG2 = (15, 23, 42), (30, 27, 75)  # OGP背景グラデ
 
 src = Image.open(SRC).convert('RGBA')
@@ -63,8 +63,8 @@ font_m = ImageFont.truetype('C:/Windows/Fonts/YuGothM.ttc', 34)
 font_s = ImageFont.truetype('C:/Windows/Fonts/YuGothM.ttc', 26)
 font_b2 = ImageFont.truetype('C:/Windows/Fonts/YuGothB.ttc', 56)
 d.text((360, 175), APP_NAME, font=font_b, fill='white')
-d.text((360, 272), 'HEIC → JPG / PNG / WebP', font=font_b2, fill=(196, 181, 253))
-d.text((360, 380), 'ブラウザの中だけで一括変換。', font=font_m, fill=(226, 232, 240))
+d.text((360, 272), 'HEIC・JPG・PNG・WebP・GIF', font=font_b2, fill=(196, 181, 253))
+d.text((360, 380), '画像形式をブラウザの中だけで一括変換。', font=font_m, fill=(226, 232, 240))
 d.text((360, 428), '画像はどこにも送信されません。', font=font_m, fill=(226, 232, 240))
 d.text((360, 500), 'インストール不要・無料・Windows / Mac / iPhone', font=font_s, fill=(148, 163, 184))
 og.convert('RGB').save(os.path.join(PUB, 'og-image.png'), optimize=True)
