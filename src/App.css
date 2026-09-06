@@ -446,3 +446,42 @@ h1 {
   font-variant-numeric: tabular-nums;
   color: var(--text-main);
 }
+
+/* 狭い画面（スマホ・小さな窓）ではボタン列を折り返す */
+@media (max-width: 640px) {
+  #root {
+    padding: 1rem;
+  }
+
+  .main-content {
+    padding: 1.5rem 1rem;
+    border-radius: 16px;
+  }
+
+  .controls-panel {
+    align-items: stretch;
+  }
+
+  .format-selector {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    row-gap: 0.5rem;
+  }
+
+  .toggle-group {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .toggle-btn {
+    padding: 0.5rem 0.9rem;
+  }
+
+  .drop-zone {
+    padding: 2rem 1rem;
+  }
+
+  h1 {
+    font-size: 1.9rem;
+  }
+}
