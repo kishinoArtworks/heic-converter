@@ -5,7 +5,7 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 900,
     height: 900,
-    title: '画像形式変換器',
+    title: '画像変幻コンバーター',
     icon: path.join(__dirname, '../build/icon.png'),
     webPreferences: {
       nodeIntegration: false,

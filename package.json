@@ -1,5 +1,5 @@
 {
-  "name": "image-format-converter",
+  "name": "hengen-converter",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -43,8 +43,8 @@
     "vite": "^5.4.21"
   },
   "build": {
-    "appId": "com.kishino.image-format-converter",
-    "productName": "画像形式変換器",
+    "appId": "com.kishino.hengen-converter",
+    "productName": "画像変幻コンバーター",
     "directories": {
       "output": "dist-electron",
       "buildResources": "build"
@@ -65,7 +65,7 @@
         }
       ],
       "icon": "build/icon.ico",
-      "artifactName": "image-format-converter-${version}-win-x64.${ext}"
+      "artifactName": "hengen-converter-${version}-win-x64.${ext}"
     },
     "nsis": {
       "oneClick": true,
@@ -73,11 +73,11 @@
       "runAfterFinish": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "画像形式変換器"
+      "shortcutName": "画像変幻コンバーター"
     }
   },
-  "productName": "画像形式変換器",
-  "description": "HEIC・JPG・PNG・WebP・GIF・BMPをブラウザの中だけでPNG・JPG・WebPに一括変換",
+  "productName": "画像変幻コンバーター",
+  "description": "画像形式、変幻自在。HEIC・JPG・PNG・WebP・GIF・BMP をブラウザの中だけで一括変換",
   "author": "kishino",
   "license": "MIT",
   "homepage": "https://kishinoartworks.github.io/heic-converter/"

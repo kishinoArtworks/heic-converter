@@ -151,8 +151,9 @@ function App() {
       <header className="header">
         <div className="logo-container">
           <img src="./icon-192.png" alt="" className="logo-img" width={56} height={56} />
-          <h1>画像形式変換器</h1>
+          <h1>変幻</h1>
         </div>
+        <p className="tagline">画像形式、変幻自在。</p>
         <p className="subtitle">HEIC・JPG・PNG・WebPなどの画像をドロップして、ボタン一発でPNG・JPG・WebP・GIFに変換します。</p>
         <p className="privacy-note">変換はこのブラウザの中だけで完結します。画像はどこにも送信されません。</p>
       </header>

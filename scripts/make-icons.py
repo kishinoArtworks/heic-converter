@@ -8,7 +8,7 @@ PUB = os.path.join(ROOT, 'public')
 BUILD = os.path.join(ROOT, 'build')
 os.makedirs(BUILD, exist_ok=True)
 
-APP_NAME = '画像形式変換器'
+APP_NAME = '画像変幻コンバーター'
 BG1, BG2 = (250, 248, 244), (241, 235, 225)  # OGP背景グラデ（温かみのある白→淡いベージュ）
 
 src = Image.open(SRC).convert('RGBA')
@@ -63,9 +63,9 @@ font_m = ImageFont.truetype('C:/Windows/Fonts/YuGothM.ttc', 34)
 font_s = ImageFont.truetype('C:/Windows/Fonts/YuGothM.ttc', 26)
 font_b2 = ImageFont.truetype('C:/Windows/Fonts/YuGothB.ttc', 46)
 d.text((360, 175), APP_NAME, font=font_b, fill=(122, 86, 61))
-d.text((360, 278), 'HEIC・JPG・PNG・WebP・GIF', font=font_b2, fill=(107, 125, 90))
-d.text((360, 380), '画像形式をブラウザの中だけで一括変換。', font=font_m, fill=(59, 54, 48))
-d.text((360, 428), '画像はどこにも送信されません。', font=font_m, fill=(59, 54, 48))
+d.text((360, 278), '画像形式、変幻自在。', font=font_b2, fill=(107, 125, 90))
+d.text((360, 380), 'HEIC・JPG・PNG・WebP・GIF を一括変換。', font=font_m, fill=(59, 54, 48))
+d.text((360, 428), 'ブラウザ完結。画像はどこにも送信されません。', font=font_m, fill=(59, 54, 48))
 d.text((360, 500), 'インストール不要・無料・Windows / Mac / iPhone', font=font_s, fill=(138, 129, 119))
 og.convert('RGB').save(os.path.join(PUB, 'og-image.png'), optimize=True)
 print('ok', avg)

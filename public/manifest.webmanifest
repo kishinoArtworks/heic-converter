@@ -1,6 +1,6 @@
 {
-  "name": "画像形式変換器",
-  "short_name": "画像形式変換器",
+  "name": "画像変幻コンバーター",
+  "short_name": "変幻",
   "description": "HEIC・JPG・PNG・WebP・GIF・BMPをブラウザの中だけでPNG・JPG・WebPに一括変換。画像はどこにも送信されません。",
   "lang": "ja",
   "start_url": "./",
