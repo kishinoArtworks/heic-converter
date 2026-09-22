@@ -629,9 +629,11 @@ h1 {
 
 .send-title {
   margin: 0 0 0.9rem;
-  font-size: 1rem;
+  /* 幅に合わせて縮め、語の途中で折り返させない */
+  font-size: clamp(0.76rem, 3.7vw, 1rem);
   font-weight: 600;
   color: var(--text-main);
+  white-space: nowrap;
 }
 
 .send-share + .send-title {
