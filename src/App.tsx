@@ -296,7 +296,7 @@ function App() {
     const done = files.filter(f => f.status === 'done' && f.blob);
     if (done.length === 0) return;
 
-    const payload = zipResult
+    const payload = downloadMethod === 'zip' && zipResult
       ? [new File([zipResult.blob], ZIP_NAME, { type: 'application/zip' })]
       : done.map(item => new File([item.blob!], `${item.baseName}.${extOf(format)}`, { type: format }));
 
@@ -546,7 +546,7 @@ function App() {
             <p className="hint">スマホの場合は「一斉保存」推奨。<br />ZIPは展開できない機種があります。</p>
           )}
           {downloadMethod === 'multiple' && (
-            <p className="hint">「複数ファイルの保存」を聞かれたら許可してください。</p>
+            <p className="hint">「複数ファイルの保存」を聞かれたら<br />許可してください。</p>
           )}
         </div>
 
@@ -582,7 +582,8 @@ function App() {
           <div className="file-list-container">
             <div className="file-list-header">
               <h3>選択されたファイル ({files.length})</h3>
-              {files.some(f => f.status === 'done') && (
+              {/* 手動保存は1枚ずつ保存するので、ZIPにまとめるボタンは出さない */}
+              {downloadMethod !== 'manual' && files.some(f => f.status === 'done') && (
                 <button
                   className="download-all-btn"
                   onClick={() => void saveAllAsZip()}
