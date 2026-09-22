@@ -395,7 +395,8 @@ function App() {
           <div className="file-list-container">
             <div className="file-list-header">
               <h3>選択されたファイル ({files.length})</h3>
-              {files.some(f => f.status === 'done') && (
+              {/* ZIP のときは下の「ZIPを保存」が受け持つので、ここには出さない */}
+              {downloadMethod !== 'zip' && files.some(f => f.status === 'done') && (
                 <button
                   className="download-all-btn"
                   onClick={() => downloadFiles(files.filter(f => f.status === 'done'))}
