@@ -683,8 +683,8 @@ h1 {
 .send-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px;
-  border-radius: 10px;
+  gap: 0;
+  border-radius: 12px;
   overflow: hidden;
 }
 
@@ -695,17 +695,18 @@ h1 {
   min-height: 54px;
   padding: 0.5rem 0.3rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 0;
   background: var(--primary-tint);
   color: var(--primary-deep);
   font-family: inherit;
-  font-size: clamp(0.72rem, 2.9vw, 0.85rem);
+  font-size: clamp(0.66rem, 2.6vw, 0.85rem);
   font-weight: 600;
   line-height: 1.25;
+  white-space: nowrap;
   text-align: center;
   text-decoration: none;
   cursor: pointer;
-  transition: transform 0.15s ease, filter 0.2s ease;
+  transition: filter 0.2s ease;
 }
 
 .send-tile:nth-child(odd) {
@@ -714,13 +715,12 @@ h1 {
 }
 
 .send-tile:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.06);
+  filter: brightness(1.08);
 }
 
 .send-tile-set {
-  outline: 1px dashed var(--border-strong);
-  outline-offset: -4px;
+  outline: 1px dashed rgba(255, 255, 255, 0.5);
+  outline-offset: -5px;
 }
 
 .send-edit {
@@ -750,12 +750,14 @@ h1 {
     padding: 1rem 0.75rem;
   }
 
-  .send-grid {
-    gap: 5px;
-  }
-
   .send-tile {
-    padding: 0.5rem 0.2rem;
+    padding: 0.5rem 0.15rem;
+  }
+}
+
+@media (max-width: 359px) {
+  .send-tile {
+    white-space: normal;
   }
 }
 

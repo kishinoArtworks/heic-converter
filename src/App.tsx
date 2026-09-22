@@ -42,15 +42,28 @@ const writeCustomLink = (link: CustomLink | null) => {
   } catch { /* 使えない環境では覚えないだけ */ }
 };
 
-// http/https 以外は開かない
-const normalizeUrl = (input: string): string | null => {
+// 受け付けるのは http/https とメールアドレスだけ
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const normalizeTarget = (input: string): string | null => {
   const value = input.trim();
   if (!value) return null;
+
+  // メールアドレス（mailto: 付きで書かれていても受ける）
+  const bare = value.replace(/^mailto:/i, '');
+  if (EMAIL.test(bare)) return `mailto:${bare}`;
+
   const withScheme = /^https?:\/\//i.test(value) ? value : `https://${value}`;
   try {
     const parsed = new URL(withScheme);
     return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.href : null;
   } catch { return null; }
+};
+
+// 登録された送り先から、枡に出す名前を決める
+const labelFromTarget = (target: string): string => {
+  if (target.startsWith('mailto:')) return target.slice(7).split('@')[0];
+  try { return new URL(target).hostname.replace(/^www\./, ''); } catch { return '送り先'; }
 };
 
 interface FileItem {
@@ -277,12 +290,12 @@ function App() {
 
   const saveCustomLink = () => {
     if (!linkEditor) return;
-    const url = normalizeUrl(linkEditor.url);
+    const url = normalizeTarget(linkEditor.url);
     if (!url) {
-      setLinkError('アドレスを確かめてください（例: https://example.com）');
+      setLinkError('アドレスを確かめてください（例: https://example.com / name@example.com）');
       return;
     }
-    const label = linkEditor.label.trim() || new URL(url).hostname.replace(/^www\./, '');
+    const label = linkEditor.label.trim() || labelFromTarget(url);
     const link = { label: label.slice(0, 12), url };
     setCustomLink(link);
     writeCustomLink(link);
@@ -579,7 +592,9 @@ function App() {
                       href={customLink.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      title={`${customLink.url} を新しいタブで開きます`}
+                      title={customLink.url.startsWith('mailto:')
+                        ? `${customLink.url.slice(7)} 宛にメールを作ります`
+                        : `${customLink.url} を新しいタブで開きます`}
                     >
                       {customLink.label}
                     </a>
@@ -587,7 +602,7 @@ function App() {
                     <button
                       className="send-tile send-tile-set"
                       onClick={() => { setLinkEditor({ label: '', url: '' }); setLinkError(null); }}
-                      title="よく使う送り先を登録できます"
+                      title="よく使うストレージやメールアドレスを登録できます"
                     >
                       リンクを設定
                     </button>
@@ -631,7 +646,11 @@ function App() {
         <div className="dialog-backdrop" role="dialog" aria-modal="true">
           <div className="dialog">
             <h3>よく使う送り先</h3>
-            <p>ご自身がよく使うストレージのアドレスを登録できます。この端末にだけ保存され、どこにも送信されません。</p>
+            <p>
+              よく使うストレージのアドレスか、送り先のメールアドレスを登録できます。<br />
+              メールを登録すると、押したときにメールソフトが開きます（画像はご自身で添付してください）。<br />
+              この端末にだけ保存され、どこにも送信されません。
+            </p>
 
             <label className="field">
               <span>表示名</span>
@@ -645,11 +664,12 @@ function App() {
             </label>
 
             <label className="field">
-              <span>アドレス</span>
+              <span>アドレス または メールアドレス</span>
               <input
-                type="url"
+                type="text"
+                inputMode="url"
                 value={linkEditor.url}
-                placeholder="https://example.com"
+                placeholder="https://example.com ／ name@example.com"
                 onChange={e => setLinkEditor({ ...linkEditor, url: e.target.value })}
               />
             </label>
