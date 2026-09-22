@@ -283,13 +283,13 @@ function App() {
     const doneFiles = updatedFiles.filter(f => f.status === 'done' && f.blob);
     if (doneFiles.length === 0) return;
 
-    if (downloadMethod === 'multiple') {
-      downloadFiles(doneFiles);
+    if (downloadMethod === 'multiple' && !isIOS()) {
+      void downloadFiles(doneFiles);
     } else if (downloadMethod === 'zip') {
       // ZIP はまとめておくだけ。保存するかどうかは利用者が決める
       const blob = await buildZip(doneFiles);
       setZipResult({ blob, count: doneFiles.length });
-      if (autoSaveZip) { save(blob, ZIP_NAME); setSaved(true); }
+      if (autoSaveZip && !isIOS()) { save(blob, ZIP_NAME); setSaved(true); }
     }
   };
 
@@ -338,6 +338,27 @@ function App() {
     setLinkError(null);
   };
 
+  // iOS Safari はダウンロードを「プレビューで開く」に変えてしまうので、
+  // 共有メニューに渡して「"ファイル"に保存」「画像を保存」を選んでもらう
+  const deliver = async (items: { blob: Blob; name: string }[]) => {
+    if (items.length === 0) return;
+
+    if (isIOS()) {
+      const payload = items.map(i => new File([i.blob], i.name, { type: i.blob.type || 'application/octet-stream' }));
+      if (navigator.canShare?.({ files: payload })) {
+        try {
+          await navigator.share({ files: payload });
+          setSaved(true);
+          return;
+        } catch (err: unknown) {
+          if ((err as { name?: string })?.name === 'AbortError') return;
+        }
+      }
+    }
+    items.forEach(i => save(i.blob, i.name));
+    setSaved(true);
+  };
+
   const buildZip = async (items: FileItem[]) => {
     const ext = extOf(format);
     const zip = new JSZip();
@@ -349,11 +370,10 @@ function App() {
     const ext = extOf(format);
 
     if (filesToDownload.length === 1 || downloadMethod === 'multiple' || forceIndividual) {
-      filesToDownload.forEach(item => save(item.blob!, `${item.baseName}.${ext}`));
+      await deliver(filesToDownload.map(item => ({ blob: item.blob!, name: `${item.baseName}.${ext}` })));
     } else if (downloadMethod === 'zip') {
-      save(await buildZip(filesToDownload), ZIP_NAME);
+      await deliver([{ blob: await buildZip(filesToDownload), name: ZIP_NAME }]);
     }
-    setSaved(true);
   };
 
   // 変換が済んだあとに ZIP へ切り替えた場合も、その場でまとめて保存できるようにする
@@ -378,8 +398,7 @@ function App() {
     if (done.length === 0) return;
     const blob = zipResult?.blob ?? await buildZip(done);
     if (!zipResult) setZipResult({ blob, count: done.length });
-    save(blob, ZIP_NAME);
-    setSaved(true);
+    await deliver([{ blob, name: ZIP_NAME }]);
   };
 
   // 枡目を押したとき、まだ保存していなければ先に保存する。
@@ -619,9 +638,9 @@ function App() {
               ))}
             </ul>
 
-            {files.some(f => f.status === 'done') && (
+            {files.length > 0 && (
               <div className="send-box">
-                {canShare && (
+                {canShare && files.some(f => f.status === 'done') && (
                   <button className="send-share" onClick={shareResults} title="端末の共有メニューを開き、そのまま送り先を選べます">
                     <Share2 size={18} /> 共有して送る
                   </button>
@@ -677,10 +696,14 @@ function App() {
                 )}
 
                 <p className="send-note">
-                  <span>各ボタンを押すと</span>
-                  <span>自動保存し、</span>
-                  <span>リンク先を開きます。</span>
-                  <br />
+                  {files.some(f => f.status === 'done') && (
+                    <>
+                      <span>各ボタンを押すと</span>
+                      <span>自動保存し、</span>
+                      <span>リンク先を開きます。</span>
+                      <br />
+                    </>
+                  )}
                   <span>ファイルはご自身で</span>
                   <span>アップロードしてください。</span>
                   {isIOS() && (
