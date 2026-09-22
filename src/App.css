@@ -620,3 +620,14 @@ h1 {
 .dialog-btn.primary:hover {
   background: var(--primary-hover);
 }
+
+/* 長い説明文は、折り返す場所がなければどこででも折る（Safari対策の保険） */
+.subtitle,
+.privacy-note,
+.hint,
+.drop-content p,
+.zip-ready-text,
+.dialog p,
+.file-name {
+  overflow-wrap: anywhere;
+}

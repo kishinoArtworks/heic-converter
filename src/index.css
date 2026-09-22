@@ -37,8 +37,11 @@ body {
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  word-break: keep-all;
+  /* 日本語は文字の間で折り返させる。keep-all を全体にかけると Safari が
+     日本語をひと続きの単語とみなし、一切折り返さずに横へはみ出す */
+  word-break: normal;
   overflow-wrap: break-word;
+  line-break: strict;
 }
 
 #root {
