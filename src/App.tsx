@@ -80,7 +80,9 @@ const newId = () => Math.random().toString(36).substring(7);
 
 // ブラウザ標準の保存。iOS でもプレビュー画面を挟まずにファイルとして保存される
 const save = (blob: Blob, name: string) => {
-  const url = URL.createObjectURL(blob);
+  // 画像やZIPの型のままだと、iOS Safari が「プレビューで開く」画面を挟む。
+  // 保存専用の型に包み直すと、そのままファイルとして保存される
+  const url = URL.createObjectURL(new Blob([blob], { type: 'application/octet-stream' }));
   const a = document.createElement('a');
   a.href = url;
   a.download = name;
@@ -370,9 +372,13 @@ function App() {
     return () => { alive = false; };
   }, [downloadMethod, zipResult, isProcessing, files, format]);
 
-  const saveZip = () => {
-    if (!zipResult) return;
-    save(zipResult.blob, ZIP_NAME);
+  // 「まとめて保存」は保存方法によらず常に ZIP。名前も画面に出ているものと同じ
+  const saveAllAsZip = async () => {
+    const done = files.filter(f => f.status === 'done' && f.blob);
+    if (done.length === 0) return;
+    const blob = zipResult?.blob ?? await buildZip(done);
+    if (!zipResult) setZipResult({ blob, count: done.length });
+    save(blob, ZIP_NAME);
     setSaved(true);
   };
 
@@ -382,7 +388,7 @@ function App() {
     if (saved) return;
     const done = files.filter(f => f.status === 'done' && f.blob);
     if (done.length === 0) return;
-    if (downloadMethod === 'zip' && zipResult) saveZip();
+    if (downloadMethod === 'zip') void saveAllAsZip();
     else void downloadFiles(done);
   };
 
@@ -572,14 +578,12 @@ function App() {
               {files.some(f => f.status === 'done') && (
                 <button
                   className="download-all-btn"
-                  onClick={() => (downloadMethod === 'zip' && zipResult
-                    ? saveZip()
-                    : void downloadFiles(files.filter(f => f.status === 'done')))}
-                  title={downloadMethod === 'zip' && zipResult
+                  onClick={() => void saveAllAsZip()}
+                  title={zipResult
                     ? `${zipResult.count}枚・${(zipResult.blob.size / 1048576).toFixed(1)}MB。このページを閉じると消えます`
-                    : '変換した画像を保存します'}
+                    : '変換した画像をひとつにまとめて保存します'}
                 >
-                  {downloadMethod === 'zip' ? `${ZIP_NAME}を保存` : '結果を保存'} <Download size={16} />
+                  {ZIP_NAME}を保存 <Download size={16} />
                 </button>
               )}
             </div>
@@ -673,11 +677,18 @@ function App() {
                 )}
 
                 <p className="send-note">
-                  押すと保存してから、その窓口を開きます。画像はご自身で上げてください。
+                  <span>各ボタンを押すと</span>
+                  <span>自動保存し、</span>
+                  <span>リンク先を開きます。</span>
+                  <br />
+                  <span>ファイルはご自身で</span>
+                  <span>アップロードしてください。</span>
                   {isIOS() && (
                     <>
                       <br />
-                      保存したものは「ファイル」アプリの「ダウンロード」にあります。
+                      <span>保存したものは</span>
+                      <span>「ファイル」アプリの</span>
+                      <span>「ダウンロード」にあります。</span>
                     </>
                   )}
                 </p>
