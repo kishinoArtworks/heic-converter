@@ -406,7 +406,7 @@ function App() {
               )}
             </div>
 
-            {zipResult && (
+            {zipResult && downloadMethod === 'zip' && (
               <div className="zip-ready">
                 <span className="zip-ready-text">
                   {zipResult.count}枚をZIPにまとめました（{(zipResult.blob.size / 1048576).toFixed(1)}MB）
