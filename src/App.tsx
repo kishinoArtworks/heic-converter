@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { UploadCloud, Image as ImageIcon, FileText, Loader2, Download, Trash2, CheckCircle2, Share2 } from 'lucide-react';
@@ -8,7 +8,7 @@ import './App.css';
 
 type DownloadMethod = 'zip' | 'multiple' | 'manual';
 
-const ZIP_NAME = 'converted_images.zip';
+const ZIP_NAME = 'Hengen_images.zip';
 
 // 送り先の一覧。アプリからは送らず、利用者が自分で上げるための入口
 const STORAGE_LINKS = [
@@ -79,6 +79,18 @@ interface FileItem {
 
 const newId = () => Math.random().toString(36).substring(7);
 
+// スマホ・タブレットは「一斉保存」を初期値にする。
+// ZIPは端末のダウンロード先に入り、あとから探しにくいため
+const defaultDownloadMethod = (): DownloadMethod => {
+  try {
+    return window.matchMedia('(pointer: coarse)').matches ? 'multiple' : 'zip';
+  } catch { return 'zip'; }
+};
+
+// iPhone・iPad は保存先が分かりにくいので、置き場所を添える
+const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent)
+  || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
 // 「変換後に自動保存」の選択はブラウザに覚えさせる。初期値はオフ
 const AUTO_SAVE_KEY = 'hengen.autoSaveZip';
 const readAutoSaveZip = () => {
@@ -103,7 +115,8 @@ function App() {
   const [pngColors, setPngColors] = useState(0);
   const [gifColors, setGifColors] = useState(256);
   const [quality, setQuality] = useState(85);
-  const [downloadMethod, setDownloadMethod] = useState<DownloadMethod>('zip');
+  const [downloadMethod, setDownloadMethod] = useState<DownloadMethod>(defaultDownloadMethod);
+  const [saved, setSaved] = useState(false);
   const [pdfScale, setPdfScale] = useState(PDF_SCALES[0].value);
   const [autoSaveZip, setAutoSaveZip] = useState(readAutoSaveZip);
   const [zipResult, setZipResult] = useState<{ blob: Blob; count: number } | null>(null);
@@ -227,6 +240,7 @@ function App() {
     if (files.length === 0) return;
     setConfirmCount(null);
     setZipResult(null);
+    setSaved(false);
     setIsProcessing(true);
 
     const updatedFiles = [...files];
@@ -261,7 +275,7 @@ function App() {
       // ZIP はまとめておくだけ。保存するかどうかは利用者が決める
       const blob = await buildZip(doneFiles);
       setZipResult({ blob, count: doneFiles.length });
-      if (autoSaveZip) saveAs(blob, ZIP_NAME);
+      if (autoSaveZip) { saveAs(blob, ZIP_NAME); setSaved(true); }
     }
   };
 
@@ -325,6 +339,39 @@ function App() {
     } else if (downloadMethod === 'zip') {
       saveAs(await buildZip(filesToDownload), ZIP_NAME);
     }
+    setSaved(true);
+  };
+
+  // 変換が済んだあとに ZIP へ切り替えた場合も、その場でまとめて保存できるようにする
+  useEffect(() => {
+    if (downloadMethod !== 'zip' || zipResult || isProcessing) return;
+    const done = files.filter(f => f.status === 'done' && f.blob);
+    if (done.length === 0) return;
+
+    let alive = true;
+    const ext = extOf(format);
+    const zip = new JSZip();
+    done.forEach(item => zip.file(`${item.baseName}.${ext}`, item.blob!));
+    void zip.generateAsync({ type: 'blob' }).then(blob => {
+      if (alive) setZipResult({ blob, count: done.length });
+    });
+    return () => { alive = false; };
+  }, [downloadMethod, zipResult, isProcessing, files, format]);
+
+  const saveZip = () => {
+    if (!zipResult) return;
+    saveAs(zipResult.blob, ZIP_NAME);
+    setSaved(true);
+  };
+
+  // 枡目を押したとき、まだ保存していなければ先に保存する。
+  // 手元にファイルがないままサイトを開いても上げようがないため
+  const saveBeforeOpen = () => {
+    if (saved) return;
+    const done = files.filter(f => f.status === 'done' && f.blob);
+    if (done.length === 0) return;
+    if (downloadMethod === 'zip' && zipResult) saveZip();
+    else void downloadFiles(done);
   };
 
   return (
@@ -516,7 +563,7 @@ function App() {
                   className="download-all-btn"
                   onClick={() => downloadFiles(files.filter(f => f.status === 'done'))}
                 >
-                  <Download size={16} /> 結果を保存
+                  結果を保存 <Download size={16} />
                 </button>
               )}
             </div>
@@ -524,10 +571,12 @@ function App() {
             {zipResult && downloadMethod === 'zip' && (
               <div className="zip-ready">
                 <span className="zip-ready-text">
-                  {zipResult.count}枚をZIPにまとめました（{(zipResult.blob.size / 1048576).toFixed(1)}MB）
-                  <span className="zip-ready-note">このページを閉じると消えます</span>
+                  <span className="zip-ready-name">{ZIP_NAME}</span>
+                  <span className="zip-ready-note">
+                    {zipResult.count}枚・{(zipResult.blob.size / 1048576).toFixed(1)}MB／このページを閉じると消えます
+                  </span>
                 </span>
-                <button className="zip-ready-btn" onClick={() => saveAs(zipResult.blob, ZIP_NAME)} title="ZIPを保存します">
+                <button className="zip-ready-btn" onClick={saveZip} title="ZIPを保存します">
                   <Download size={18} /> ZIPを保存
                 </button>
               </div>
@@ -572,7 +621,7 @@ function App() {
                   </button>
                 )}
 
-                <h4 className="send-title">ストレージサービスを選択</h4>
+                <h4 className="send-title">保存してストレージサービスを利用</h4>
                 <div className="send-grid">
                   {STORAGE_LINKS.map(link => (
                     <a
@@ -581,7 +630,8 @@ function App() {
                       href={link.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      title={`${link.label}を新しいタブで開きます`}
+                      onClick={saveBeforeOpen}
+                      title={`画像を保存して、${link.label}を新しいタブで開きます`}
                     >
                       {link.label}
                     </a>
@@ -592,9 +642,10 @@ function App() {
                       href={customLink.url}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={saveBeforeOpen}
                       title={customLink.url.startsWith('mailto:')
-                        ? `${customLink.url.slice(7)} 宛にメールを作ります`
-                        : `${customLink.url} を新しいタブで開きます`}
+                        ? `画像を保存して、${customLink.url.slice(7)} 宛にメールを作ります`
+                        : `画像を保存して、${customLink.url} を新しいタブで開きます`}
                     >
                       {customLink.label}
                     </a>
@@ -619,7 +670,15 @@ function App() {
                   </button>
                 )}
 
-                <p className="send-note">保存した画像は、ご自身で送り先へ上げる形になります。</p>
+                <p className="send-note">
+                  押すと保存してから、その窓口を開きます。画像はご自身で上げてください。
+                  {isIOS() && (
+                    <>
+                      <br />
+                      保存したものは「ファイル」アプリの「ダウンロード」にあります。
+                    </>
+                  )}
+                </p>
               </div>
             )}
 
