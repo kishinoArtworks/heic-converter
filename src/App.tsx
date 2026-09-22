@@ -626,10 +626,17 @@ function App() {
               {files.map(item => (
                 <li key={item.id} className={`file-item ${item.status}`}>
                   <div className="file-info">
-                    {item.pdf
+                    {/* 変換が済んだら、できあがったファイルの名前と画像の印に切り替える */}
+                    {item.pdf && item.status !== 'done'
                       ? <FileText size={20} className="file-icon" />
                       : <ImageIcon size={20} className="file-icon" />}
-                    <span className="file-name" title={item.label}>{item.label}</span>
+                    {item.status === 'done' ? (
+                      <span className="file-name" title={`元のファイル: ${item.label}`}>
+                        {item.baseName}.{extOf(format)}
+                      </span>
+                    ) : (
+                      <span className="file-name" title={item.label}>{item.label}</span>
+                    )}
                   </div>
                   <div className="file-actions">
                     {item.status === 'pending' && <span className="status-badge pending">待機中</span>}
