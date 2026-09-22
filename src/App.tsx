@@ -723,14 +723,6 @@ function App() {
                 )}
                 <span>ファイルはご自身で</span>
                 <span>アップロードしてください。</span>
-                {isIOS() && (
-                  <>
-                    <br />
-                    <span>保存したものは</span>
-                    <span>「ファイル」アプリの</span>
-                    <span>「ダウンロード」にあります。</span>
-                  </>
-                )}
               </p>
         </div>
       </main>
