@@ -593,7 +593,6 @@ h1 {
 
 /* 文節ごとに塊で扱い、語の途中ではなく意味の切れ目で折り返させる */
 .privacy-note span,
-.send-note span,
 .subtitle span {
   display: inline-block;
 }
@@ -695,12 +694,6 @@ h1 {
   font-size: 0.8rem;
   cursor: pointer;
   text-decoration: underline;
-}
-
-.send-note {
-  margin: 0.8rem 0 0;
-  font-size: 0.8rem;
-  color: var(--text-muted);
 }
 
 @media (max-width: 640px) {

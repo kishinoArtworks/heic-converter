@@ -130,7 +130,6 @@ function App() {
   const [gifColors, setGifColors] = useState(256);
   const [quality, setQuality] = useState(85);
   const [downloadMethod, setDownloadMethod] = useState<DownloadMethod>(defaultDownloadMethod);
-  const [saved, setSaved] = useState(false);
   const [pdfScale, setPdfScale] = useState(PDF_SCALES[0].value);
   const [autoSaveZip, setAutoSaveZip] = useState(readAutoSaveZip);
   const [zipResult, setZipResult] = useState<{ blob: Blob; count: number } | null>(null);
@@ -254,7 +253,6 @@ function App() {
     if (files.length === 0) return;
     setConfirmCount(null);
     setZipResult(null);
-    setSaved(false);
     setIsProcessing(true);
 
     const updatedFiles = [...files];
@@ -289,7 +287,7 @@ function App() {
       // ZIP はまとめておくだけ。保存するかどうかは利用者が決める
       const blob = await buildZip(doneFiles);
       setZipResult({ blob, count: doneFiles.length });
-      if (autoSaveZip && !isIOS()) { save(blob, ZIP_NAME); setSaved(true); }
+      if (autoSaveZip && !isIOS()) save(blob, ZIP_NAME);
     }
   };
 
@@ -348,7 +346,6 @@ function App() {
       if (navigator.canShare?.({ files: payload })) {
         try {
           await navigator.share({ files: payload });
-          setSaved(true);
           return;
         } catch (err: unknown) {
           if ((err as { name?: string })?.name === 'AbortError') return;
@@ -356,7 +353,6 @@ function App() {
       }
     }
     items.forEach(i => save(i.blob, i.name));
-    setSaved(true);
   };
 
   const buildZip = async (items: FileItem[]) => {
@@ -401,15 +397,7 @@ function App() {
     await deliver([{ blob, name: ZIP_NAME }]);
   };
 
-  // 枡目を押したとき、まだ保存していなければ先に保存する。
-  // 手元にファイルがないままサイトを開いても上げようがないため
-  const saveBeforeOpen = () => {
-    if (saved) return;
-    const done = files.filter(f => f.status === 'done' && f.blob);
-    if (done.length === 0) return;
-    if (downloadMethod === 'zip') void saveAllAsZip();
-    else void downloadFiles(done);
-  };
+
 
   return (
     <div className="container">
@@ -672,8 +660,7 @@ function App() {
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={saveBeforeOpen}
-                    title={`画像を保存して、${link.label}を新しいタブで開きます`}
+                    title={`${link.label}を新しいタブで開きます`}
                   >
                     {link.label}
                   </a>
@@ -684,10 +671,9 @@ function App() {
                     href={customLink.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={saveBeforeOpen}
                     title={customLink.url.startsWith('mailto:')
-                      ? `画像を保存して、${customLink.url.slice(7)} 宛にメールを作ります`
-                      : `画像を保存して、${customLink.url} を新しいタブで開きます`}
+                      ? `${customLink.url.slice(7)} 宛にメールを作ります`
+                      : `${customLink.url} を新しいタブで開きます`}
                   >
                     {customLink.label}
                   </a>
@@ -712,18 +698,6 @@ function App() {
                 </button>
               )}
 
-              <p className="send-note">
-                {files.some(f => f.status === 'done') && (
-                  <>
-                    <span>各ボタンを押すと</span>
-                    <span>自動保存し、</span>
-                    <span>リンク先を開きます。</span>
-                    <br />
-                  </>
-                )}
-                <span>ファイルはご自身で</span>
-                <span>アップロードしてください。</span>
-              </p>
         </div>
       </main>
 
