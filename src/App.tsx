@@ -546,7 +546,11 @@ function App() {
             <p className="hint">スマホの場合は「一斉保存」推奨。<br />ZIPは展開できない機種があります。</p>
           )}
           {downloadMethod === 'multiple' && (
-            <p className="hint">「複数ファイルの保存」を聞かれたら<br />許可してください。</p>
+            <p className="hint">
+              {isIOS()
+                ? <>共有メニューの「画像を保存」で<br />「写真」に入ります。</>
+                : <>「複数ファイルの保存」を聞かれたら<br />許可してください。</>}
+            </p>
           )}
         </div>
 
@@ -582,8 +586,8 @@ function App() {
           <div className="file-list-container">
             <div className="file-list-header">
               <h3>選択されたファイル ({files.length})</h3>
-              {/* 手動保存は1枚ずつ保存するので、ZIPにまとめるボタンは出さない */}
-              {downloadMethod !== 'manual' && files.some(f => f.status === 'done') && (
+              {/* ZIP はひとつのZIPで、一斉保存は1枚ずつ全部を保存する。手動保存は各行のボタンだけ */}
+              {downloadMethod === 'zip' && files.some(f => f.status === 'done') && (
                 <button
                   className="download-all-btn"
                   onClick={() => void saveAllAsZip()}
@@ -592,6 +596,17 @@ function App() {
                     : '変換した画像をひとつにまとめて保存します'}
                 >
                   {ZIP_NAME}を保存 <Download size={16} />
+                </button>
+              )}
+              {downloadMethod === 'multiple' && files.some(f => f.status === 'done') && (
+                <button
+                  className="download-all-btn"
+                  onClick={() => void downloadFiles(files.filter(f => f.status === 'done' && f.blob))}
+                  title={isIOS()
+                    ? '共有メニューが開きます。「画像を保存」で写真に入ります'
+                    : '変換した画像を1枚ずつ、まとめてダウンロードします'}
+                >
+                  {files.filter(f => f.status === 'done').length}枚を一斉保存 <Download size={16} />
                 </button>
               )}
             </div>
