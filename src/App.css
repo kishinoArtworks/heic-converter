@@ -637,3 +637,171 @@ h1 {
 .subtitle span {
   display: inline-block;
 }
+
+/* 変換後の送り先。アプリからは送らず、利用者が自分で渡すための入口 */
+.send-box {
+  margin: 1.25rem 0 0;
+  padding: 1.25rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.send-share {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  padding: 0.6rem 1.4rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.send-share:hover {
+  background: var(--primary);
+  color: #fff;
+}
+
+.send-title {
+  margin: 0 0 0.9rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.send-share + .send-title {
+  margin-top: 1.1rem;
+}
+
+/* 3列の枡目。濃淡を市松に並べる */
+.send-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.send-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 54px;
+  padding: 0.5rem 0.3rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary-tint);
+  color: var(--primary-deep);
+  font-family: inherit;
+  font-size: clamp(0.72rem, 2.9vw, 0.85rem);
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.2s ease;
+}
+
+.send-tile:nth-child(odd) {
+  background: var(--primary);
+  color: #fff;
+}
+
+.send-tile:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+}
+
+.send-tile-set {
+  outline: 1px dashed var(--border-strong);
+  outline-offset: -4px;
+}
+
+.send-edit {
+  margin: 0.8rem 0 0;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-family: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.send-note {
+  margin: 0.8rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+@media (max-width: 640px) {
+  .file-list-container {
+    padding: 1rem;
+  }
+
+  .send-box {
+    padding: 1rem 0.75rem;
+  }
+
+  .send-grid {
+    gap: 5px;
+  }
+
+  .send-tile {
+    padding: 0.5rem 0.2rem;
+  }
+}
+
+/* ダイアログの入力欄 */
+.field {
+  display: block;
+  margin: 0 0 0.9rem;
+  text-align: left;
+}
+
+.field span {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.field input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+.field input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.field-error {
+  margin: -0.4rem 0 0.9rem;
+  font-size: 0.8rem;
+  color: var(--danger);
+  text-align: left;
+}
+
+.dialog-btn.danger {
+  margin-right: auto;
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.dialog-btn.danger:hover {
+  background: var(--danger-soft);
+}

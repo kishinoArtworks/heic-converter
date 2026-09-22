@@ -16,6 +16,8 @@
   --primary: #6b7d5a;         /* モスグリーン */
   --primary-hover: #5a6b4a;
   --primary-soft: #e7ecdf;    /* モスグリーンの淡い面 */
+  --primary-tint: #cfdcc0;    /* モスグリーンの中間。枡目の市松に使う */
+  --primary-deep: #414d36;    /* 淡い面に載せる文字色 */
   --text-main: #3b3630;       /* 温かみのある墨色 */
   --title: #7a563d;           /* タイトル: 焦げ茶（ユーザー指定） */
   --text-muted: #8a8177;

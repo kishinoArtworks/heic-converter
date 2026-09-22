@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
-import { UploadCloud, Image as ImageIcon, FileText, Loader2, Download, Trash2, CheckCircle2 } from 'lucide-react';
+import { UploadCloud, Image as ImageIcon, FileText, Loader2, Download, Trash2, CheckCircle2, Share2 } from 'lucide-react';
 import { FORMATS, PNG_COLORS, GIF_COLORS, INPUT_EXT, PDF_EXT, ACCEPT, PDF_SCALES, extOf, convertImage, convertCanvas, loadPdf } from './convert';
 import type { Format, PdfDoc } from './convert';
 import './App.css';
@@ -9,6 +9,49 @@ import './App.css';
 type DownloadMethod = 'zip' | 'multiple' | 'manual';
 
 const ZIP_NAME = 'converted_images.zip';
+
+// 送り先の一覧。アプリからは送らず、利用者が自分で上げるための入口
+const STORAGE_LINKS = [
+  { label: 'G-Drive', url: 'https://drive.google.com/drive/my-drive' },
+  { label: 'ギガファイル便', url: 'https://gigafile.nu/' },
+  { label: 'Dropbox', url: 'https://www.dropbox.com/home' },
+  { label: 'firestorage', url: 'https://firestorage.jp/' },
+  { label: 'ギガワタス', url: 'https://giga-watasu.jp/' },
+  { label: 'BOX', url: 'https://www.box.com/ja-jp/home' },
+  { label: 'WeTransfer', url: 'https://wetransfer.com/' },
+  { label: 'データ便', url: 'https://datadeliver.net/' },
+];
+
+// 9つめは利用者が決める。ブラウザに覚えさせる
+const CUSTOM_LINK_KEY = 'hengen.customLink';
+interface CustomLink { label: string; url: string }
+
+const readCustomLink = (): CustomLink | null => {
+  try {
+    const raw = localStorage.getItem(CUSTOM_LINK_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as CustomLink;
+    return parsed.url ? parsed : null;
+  } catch { return null; }
+};
+
+const writeCustomLink = (link: CustomLink | null) => {
+  try {
+    if (link) localStorage.setItem(CUSTOM_LINK_KEY, JSON.stringify(link));
+    else localStorage.removeItem(CUSTOM_LINK_KEY);
+  } catch { /* 使えない環境では覚えないだけ */ }
+};
+
+// http/https 以外は開かない
+const normalizeUrl = (input: string): string | null => {
+  const value = input.trim();
+  if (!value) return null;
+  const withScheme = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+  try {
+    const parsed = new URL(withScheme);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.href : null;
+  } catch { return null; }
+};
 
 interface FileItem {
   id: string;
@@ -52,6 +95,9 @@ function App() {
   const [autoSaveZip, setAutoSaveZip] = useState(readAutoSaveZip);
   const [zipResult, setZipResult] = useState<{ blob: Blob; count: number } | null>(null);
   const [confirmCount, setConfirmCount] = useState<number | null>(null);
+  const [customLink, setCustomLink] = useState<CustomLink | null>(readCustomLink);
+  const [linkEditor, setLinkEditor] = useState<{ label: string; url: string } | null>(null);
+  const [linkError, setLinkError] = useState<string | null>(null);
   const [isReadingPdf, setIsReadingPdf] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -59,6 +105,7 @@ function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const colors = format === 'image/png' ? pngColors : format === 'image/gif' ? gifColors : 0;
+  const canShare = typeof navigator !== 'undefined' && typeof navigator.canShare === 'function';
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -203,6 +250,51 @@ function App() {
       setZipResult({ blob, count: doneFiles.length });
       if (autoSaveZip) saveAs(blob, ZIP_NAME);
     }
+  };
+
+  // 端末の共有メニューに渡す。送り先を選ぶのは利用者で、アプリは何も送らない
+  const shareResults = async () => {
+    const done = files.filter(f => f.status === 'done' && f.blob);
+    if (done.length === 0) return;
+
+    const payload = zipResult
+      ? [new File([zipResult.blob], ZIP_NAME, { type: 'application/zip' })]
+      : done.map(item => new File([item.blob!], `${item.baseName}.${extOf(format)}`, { type: format }));
+
+    if (!navigator.canShare?.({ files: payload })) {
+      setNotice('この端末では共有できませんでした。保存してから送り先へ上げてください。');
+      return;
+    }
+    try {
+      await navigator.share({ files: payload });
+    } catch (err: unknown) {
+      // 利用者が閉じただけのときは何も言わない
+      if ((err as { name?: string })?.name !== 'AbortError') {
+        setNotice('共有できませんでした。保存してから送り先へ上げてください。');
+      }
+    }
+  };
+
+  const saveCustomLink = () => {
+    if (!linkEditor) return;
+    const url = normalizeUrl(linkEditor.url);
+    if (!url) {
+      setLinkError('アドレスを確かめてください（例: https://example.com）');
+      return;
+    }
+    const label = linkEditor.label.trim() || new URL(url).hostname.replace(/^www\./, '');
+    const link = { label: label.slice(0, 12), url };
+    setCustomLink(link);
+    writeCustomLink(link);
+    setLinkEditor(null);
+    setLinkError(null);
+  };
+
+  const clearCustomLink = () => {
+    setCustomLink(null);
+    writeCustomLink(null);
+    setLinkEditor(null);
+    setLinkError(null);
   };
 
   const buildZip = async (items: FileItem[]) => {
@@ -459,22 +551,121 @@ function App() {
               ))}
             </ul>
 
-            <button
-              className={`convert-btn ${isProcessing ? 'processing' : ''}`}
-              onClick={startConvert}
-              disabled={isProcessing || files.every(f => f.status === 'done' || f.status === 'error')}
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 size={20} className="spin" /> 変換中...
-                </>
-              ) : (
-                <>一括変換を開始</>
-              )}
-            </button>
+            {files.some(f => f.status === 'done') && (
+              <div className="send-box">
+                {canShare && (
+                  <button className="send-share" onClick={shareResults} title="端末の共有メニューを開き、そのまま送り先を選べます">
+                    <Share2 size={18} /> 共有して送る
+                  </button>
+                )}
+
+                <h4 className="send-title">ストレージサービスを選択</h4>
+                <div className="send-grid">
+                  {STORAGE_LINKS.map(link => (
+                    <a
+                      key={link.url}
+                      className="send-tile"
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={`${link.label}を新しいタブで開きます`}
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                  {customLink ? (
+                    <a
+                      className="send-tile"
+                      href={customLink.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={`${customLink.url} を新しいタブで開きます`}
+                    >
+                      {customLink.label}
+                    </a>
+                  ) : (
+                    <button
+                      className="send-tile send-tile-set"
+                      onClick={() => { setLinkEditor({ label: '', url: '' }); setLinkError(null); }}
+                      title="よく使う送り先を登録できます"
+                    >
+                      リンクを設定
+                    </button>
+                  )}
+                </div>
+
+                {customLink && (
+                  <button
+                    className="send-edit"
+                    onClick={() => { setLinkEditor({ ...customLink }); setLinkError(null); }}
+                    title="登録した送り先を変えます"
+                  >
+                    「{customLink.label}」を変更
+                  </button>
+                )}
+
+                <p className="send-note">保存した画像は、ご自身で送り先へ上げる形になります。</p>
+              </div>
+            )}
+
+            {files.some(f => f.status !== 'done') && (
+              <button
+                className={`convert-btn ${isProcessing ? 'processing' : ''}`}
+                onClick={startConvert}
+                disabled={isProcessing}
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 size={20} className="spin" /> 変換中...
+                  </>
+                ) : (
+                  <>一括変換を開始</>
+                )}
+              </button>
+            )}
           </div>
         )}
       </main>
+
+      {linkEditor && (
+        <div className="dialog-backdrop" role="dialog" aria-modal="true">
+          <div className="dialog">
+            <h3>よく使う送り先</h3>
+            <p>ご自身がよく使うストレージのアドレスを登録できます。この端末にだけ保存され、どこにも送信されません。</p>
+
+            <label className="field">
+              <span>表示名</span>
+              <input
+                type="text"
+                value={linkEditor.label}
+                maxLength={12}
+                placeholder="例: 社内の共有"
+                onChange={e => setLinkEditor({ ...linkEditor, label: e.target.value })}
+              />
+            </label>
+
+            <label className="field">
+              <span>アドレス</span>
+              <input
+                type="url"
+                value={linkEditor.url}
+                placeholder="https://example.com"
+                onChange={e => setLinkEditor({ ...linkEditor, url: e.target.value })}
+              />
+            </label>
+
+            {linkError && <p className="field-error">{linkError}</p>}
+
+            <div className="dialog-actions">
+              {customLink && (
+                <button className="dialog-btn danger" onClick={clearCustomLink} title="登録を消します">削除</button>
+              )}
+              <button className="dialog-btn" onClick={() => setLinkEditor(null)} title="変更せずに閉じます">やめる</button>
+              <button className="dialog-btn primary" onClick={saveCustomLink} title="この送り先を登録します">保存</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {confirmCount !== null && (
         <div className="dialog-backdrop" role="dialog" aria-modal="true">
