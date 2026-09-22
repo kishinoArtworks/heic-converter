@@ -600,11 +600,11 @@ h1 {
 
 /* 変換後の送り先。アプリからは送らず、利用者が自分で渡すための入口 */
 .send-box {
-  margin: 1.25rem 0 0;
+  margin: 1.5rem 0 0;
   padding: 1.25rem 1rem;
-  background: var(--surface);
+  background: var(--surface-soft);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 16px;
   text-align: center;
 }
 

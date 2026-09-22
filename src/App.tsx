@@ -638,86 +638,6 @@ function App() {
               ))}
             </ul>
 
-            {files.length > 0 && (
-              <div className="send-box">
-                {canShare && files.some(f => f.status === 'done') && (
-                  <button className="send-share" onClick={shareResults} title="端末の共有メニューを開き、そのまま送り先を選べます">
-                    <Share2 size={18} /> 共有して送る
-                  </button>
-                )}
-
-                <h4 className="send-title">保存してストレージサービスを利用</h4>
-                <div className="send-grid">
-                  {STORAGE_LINKS.map(link => (
-                    <a
-                      key={link.url}
-                      className="send-tile"
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={saveBeforeOpen}
-                      title={`画像を保存して、${link.label}を新しいタブで開きます`}
-                    >
-                      {link.label}
-                    </a>
-                  ))}
-                  {customLink ? (
-                    <a
-                      className="send-tile"
-                      href={customLink.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={saveBeforeOpen}
-                      title={customLink.url.startsWith('mailto:')
-                        ? `画像を保存して、${customLink.url.slice(7)} 宛にメールを作ります`
-                        : `画像を保存して、${customLink.url} を新しいタブで開きます`}
-                    >
-                      {customLink.label}
-                    </a>
-                  ) : (
-                    <button
-                      className="send-tile send-tile-set"
-                      onClick={() => { setLinkEditor({ label: '', url: '' }); setLinkError(null); }}
-                      title="よく使うストレージやメールアドレスを登録できます"
-                    >
-                      リンクを設定
-                    </button>
-                  )}
-                </div>
-
-                {customLink && (
-                  <button
-                    className="send-edit"
-                    onClick={() => { setLinkEditor({ ...customLink }); setLinkError(null); }}
-                    title="登録した送り先を変えます"
-                  >
-                    「{customLink.label}」を変更
-                  </button>
-                )}
-
-                <p className="send-note">
-                  {files.some(f => f.status === 'done') && (
-                    <>
-                      <span>各ボタンを押すと</span>
-                      <span>自動保存し、</span>
-                      <span>リンク先を開きます。</span>
-                      <br />
-                    </>
-                  )}
-                  <span>ファイルはご自身で</span>
-                  <span>アップロードしてください。</span>
-                  {isIOS() && (
-                    <>
-                      <br />
-                      <span>保存したものは</span>
-                      <span>「ファイル」アプリの</span>
-                      <span>「ダウンロード」にあります。</span>
-                    </>
-                  )}
-                </p>
-              </div>
-            )}
-
             {files.some(f => f.status !== 'done') && (
               <button
                 className={`convert-btn ${isProcessing ? 'processing' : ''}`}
@@ -735,6 +655,84 @@ function App() {
             )}
           </div>
         )}
+
+        <div className="send-box">
+              {canShare && files.some(f => f.status === 'done') && (
+                <button className="send-share" onClick={shareResults} title="端末の共有メニューを開き、そのまま送り先を選べます">
+                  <Share2 size={18} /> 共有して送る
+                </button>
+              )}
+
+              <h4 className="send-title">ストレージサービスを利用</h4>
+              <div className="send-grid">
+                {STORAGE_LINKS.map(link => (
+                  <a
+                    key={link.url}
+                    className="send-tile"
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={saveBeforeOpen}
+                    title={`画像を保存して、${link.label}を新しいタブで開きます`}
+                  >
+                    {link.label}
+                  </a>
+                ))}
+                {customLink ? (
+                  <a
+                    className="send-tile"
+                    href={customLink.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={saveBeforeOpen}
+                    title={customLink.url.startsWith('mailto:')
+                      ? `画像を保存して、${customLink.url.slice(7)} 宛にメールを作ります`
+                      : `画像を保存して、${customLink.url} を新しいタブで開きます`}
+                  >
+                    {customLink.label}
+                  </a>
+                ) : (
+                  <button
+                    className="send-tile send-tile-set"
+                    onClick={() => { setLinkEditor({ label: '', url: '' }); setLinkError(null); }}
+                    title="よく使うストレージやメールアドレスを登録できます"
+                  >
+                    リンクを設定
+                  </button>
+                )}
+              </div>
+
+              {customLink && (
+                <button
+                  className="send-edit"
+                  onClick={() => { setLinkEditor({ ...customLink }); setLinkError(null); }}
+                  title="登録した送り先を変えます"
+                >
+                  「{customLink.label}」を変更
+                </button>
+              )}
+
+              <p className="send-note">
+                {files.some(f => f.status === 'done') && (
+                  <>
+                    <span>各ボタンを押すと</span>
+                    <span>自動保存し、</span>
+                    <span>リンク先を開きます。</span>
+                    <br />
+                  </>
+                )}
+                <span>ファイルはご自身で</span>
+                <span>アップロードしてください。</span>
+                {isIOS() && (
+                  <>
+                    <br />
+                    <span>保存したものは</span>
+                    <span>「ファイル」アプリの</span>
+                    <span>「ダウンロード」にあります。</span>
+                  </>
+                )}
+              </p>
+        </div>
       </main>
 
       {linkEditor && (
