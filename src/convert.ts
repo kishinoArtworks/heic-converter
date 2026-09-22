@@ -29,9 +29,16 @@ export interface ConvertOptions {
 }
 
 // 読み込める形式（拡張子で判定）
-export const INPUT_EXT = /\.(heic|heif|png|jpe?g|webp|gif|bmp|avif)$/i;
+export const INPUT_EXT = /\.(heic|heif|png|jpe?g|webp|gif|bmp|avif|pdf)$/i;
 const HEIC_EXT = /\.(heic|heif)$/i;
-export const ACCEPT = '.heic,.heif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif,image/*';
+export const PDF_EXT = /\.pdf$/i;
+export const ACCEPT = '.heic,.heif,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif,.pdf,image/*,application/pdf';
+
+// PDF を何倍の大きさで描くか。A4（595x842）が基準
+export const PDF_SCALES: { value: number; label: string; note: string }[] = [
+  { value: 2, label: '標準', note: 'A4で1190x1684px。スマホの画面ではこれで等倍に見える' },
+  { value: 3, label: '高精細', note: 'A4で1785x2526px。拡大して読む・PCで見るとき' },
+];
 
 export const extOf = (format: Format) => FORMATS.find(f => f.value === format)!.ext;
 
@@ -123,10 +130,75 @@ function encodeGif(img: ImageData, colors: number): Blob {
   return new Blob([new Uint8Array(bytes)], { type: 'image/gif' });
 }
 
-export async function convertImage(file: File, { format, colors, quality }: ConvertOptions): Promise<Blob> {
-  const bitmap = await decode(file);
-  const canvas = draw(bitmap, format === 'image/jpeg'); // JPG は透明を持てないので白で埋める
+// 描き終わった canvas を指定の形式で書き出す
+export async function convertCanvas(canvas: HTMLCanvasElement, { format, colors, quality }: ConvertOptions): Promise<Blob> {
   if (format === 'image/gif') return encodeGif(pixels(canvas), colors);
   if (format === 'image/png' && colors > 0) return encodePng8(pixels(canvas), colors);
   return encodeWithCanvas(canvas, format, quality);
+}
+
+export async function convertImage(file: File, options: ConvertOptions): Promise<Blob> {
+  const bitmap = await decode(file);
+  const canvas = draw(bitmap, options.format === 'image/jpeg'); // JPG は透明を持てないので白で埋める
+  return convertCanvas(canvas, options);
+}
+
+/* ---------------- PDF ---------------- */
+
+// pdf.js は 1MB 近くあるので、PDF を入れた人のときだけ読み込む
+export interface PdfDoc {
+  numPages: number;
+  render: (pageNumber: number, scale: number) => Promise<HTMLCanvasElement>;
+  close: () => void;
+}
+
+type PdfjsModule = typeof import('pdfjs-dist');
+let pdfjsPromise: Promise<PdfjsModule> | null = null;
+
+async function pdfjs(): Promise<PdfjsModule> {
+  if (!pdfjsPromise) {
+    pdfjsPromise = (async () => {
+      const mod = await import('pdfjs-dist');
+      const worker = await import('pdfjs-dist/build/pdf.worker.min.mjs?url');
+      mod.GlobalWorkerOptions.workerSrc = worker.default;
+      return mod;
+    })();
+  }
+  return pdfjsPromise;
+}
+
+export async function loadPdf(file: File): Promise<PdfDoc> {
+  const lib = await pdfjs();
+  const data = new Uint8Array(await file.arrayBuffer());
+  const task = lib.getDocument({ data });
+  let doc;
+  try {
+    doc = await task.promise;
+  } catch (err: unknown) {
+    const name = (err as { name?: string })?.name;
+    if (name === 'PasswordException') throw new Error('パスワードのかかったPDFは開けません', { cause: err });
+    throw new Error('このPDFを読み込めませんでした（壊れているか、未対応の形式です）', { cause: err });
+  }
+
+  return {
+    numPages: doc.numPages,
+    close: () => { void task.destroy(); },
+    render: async (pageNumber: number, scale: number) => {
+      const page = await doc.getPage(pageNumber);
+      const viewport = page.getViewport({ scale });
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(viewport.width);
+      canvas.height = Math.round(viewport.height);
+      const ctx = canvas.getContext('2d')!;
+      // 紙は白。透明のままだと JPG にしたとき黒くなる
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // intent:'print' にするのは印刷したいからではなく、画面向けの描画が
+      // requestAnimationFrame で進む＝タブを裏に回すと止まってしまうため。
+      // 紙に出したときの見た目で描かれるので、書類を画像にする用途にも合う。
+      await page.render({ canvas, viewport, intent: 'print' }).promise;
+      page.cleanup();
+      return canvas;
+    },
+  };
 }
