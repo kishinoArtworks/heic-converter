@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import JSZip from 'jszip';
-import { saveAs } from 'file-saver';
 import { UploadCloud, Image as ImageIcon, FileText, Loader2, Download, Trash2, CheckCircle2, Share2 } from 'lucide-react';
 import { FORMATS, PNG_COLORS, GIF_COLORS, INPUT_EXT, PDF_EXT, ACCEPT, PDF_SCALES, extOf, convertImage, convertCanvas, loadPdf } from './convert';
 import type { Format, PdfDoc } from './convert';
@@ -78,6 +77,19 @@ interface FileItem {
 }
 
 const newId = () => Math.random().toString(36).substring(7);
+
+// ブラウザ標準の保存。iOS でもプレビュー画面を挟まずにファイルとして保存される
+const save = (blob: Blob, name: string) => {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+};
 
 // スマホ・タブレットは「一斉保存」を初期値にする。
 // ZIPは端末のダウンロード先に入り、あとから探しにくいため
@@ -275,7 +287,7 @@ function App() {
       // ZIP はまとめておくだけ。保存するかどうかは利用者が決める
       const blob = await buildZip(doneFiles);
       setZipResult({ blob, count: doneFiles.length });
-      if (autoSaveZip) { saveAs(blob, ZIP_NAME); setSaved(true); }
+      if (autoSaveZip) { save(blob, ZIP_NAME); setSaved(true); }
     }
   };
 
@@ -335,9 +347,9 @@ function App() {
     const ext = extOf(format);
 
     if (filesToDownload.length === 1 || downloadMethod === 'multiple' || forceIndividual) {
-      filesToDownload.forEach(item => saveAs(item.blob!, `${item.baseName}.${ext}`));
+      filesToDownload.forEach(item => save(item.blob!, `${item.baseName}.${ext}`));
     } else if (downloadMethod === 'zip') {
-      saveAs(await buildZip(filesToDownload), ZIP_NAME);
+      save(await buildZip(filesToDownload), ZIP_NAME);
     }
     setSaved(true);
   };
@@ -360,7 +372,7 @@ function App() {
 
   const saveZip = () => {
     if (!zipResult) return;
-    saveAs(zipResult.blob, ZIP_NAME);
+    save(zipResult.blob, ZIP_NAME);
     setSaved(true);
   };
 
@@ -557,30 +569,20 @@ function App() {
           <div className="file-list-container">
             <div className="file-list-header">
               <h3>選択されたファイル ({files.length})</h3>
-              {/* ZIP のときは下の「ZIPを保存」が受け持つので、ここには出さない */}
-              {downloadMethod !== 'zip' && files.some(f => f.status === 'done') && (
+              {files.some(f => f.status === 'done') && (
                 <button
                   className="download-all-btn"
-                  onClick={() => downloadFiles(files.filter(f => f.status === 'done'))}
+                  onClick={() => (downloadMethod === 'zip' && zipResult
+                    ? saveZip()
+                    : void downloadFiles(files.filter(f => f.status === 'done')))}
+                  title={downloadMethod === 'zip' && zipResult
+                    ? `${zipResult.count}枚・${(zipResult.blob.size / 1048576).toFixed(1)}MB。このページを閉じると消えます`
+                    : '変換した画像を保存します'}
                 >
-                  結果を保存 <Download size={16} />
+                  {downloadMethod === 'zip' ? `${ZIP_NAME}を保存` : '結果を保存'} <Download size={16} />
                 </button>
               )}
             </div>
-
-            {zipResult && downloadMethod === 'zip' && (
-              <div className="zip-ready">
-                <span className="zip-ready-text">
-                  <span className="zip-ready-name">{ZIP_NAME}</span>
-                  <span className="zip-ready-note">
-                    {zipResult.count}枚・{(zipResult.blob.size / 1048576).toFixed(1)}MB／このページを閉じると消えます
-                  </span>
-                </span>
-                <button className="zip-ready-btn" onClick={saveZip} title="ZIPを保存します">
-                  <Download size={18} /> ZIPを保存
-                </button>
-              </div>
-            )}
 
             <ul className="file-list">
               {files.map(item => (

@@ -202,6 +202,7 @@ h1 {
 .download-all-btn {
   display: flex;
   align-items: center;
+  justify-content: center;
   flex: none;
   white-space: nowrap;
   gap: 0.4rem;
@@ -512,57 +513,6 @@ h1 {
   color: var(--text-main);
 }
 
-/* 変換が終わったあとに出る ZIP の保存欄 */
-.zip-ready {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-  background: var(--primary-soft);
-  border: 1px solid var(--primary);
-  border-radius: 12px;
-  padding: 1rem 1.25rem;
-  margin-bottom: 1rem;
-}
-
-.zip-ready-text {
-  font-size: 0.9rem;
-  color: var(--text-main);
-}
-
-.zip-ready-name {
-  display: block;
-  font-weight: 600;
-  word-break: break-all;
-}
-
-.zip-ready-note {
-  display: block;
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  margin-top: 0.25rem;
-}
-
-.zip-ready-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: var(--primary);
-  color: #fff;
-  border: none;
-  padding: 0.7rem 1.4rem;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.zip-ready-btn:hover {
-  background: var(--primary-hover);
-}
-
 /* 確認ダイアログ（ブラウザ標準の確認窓は使わない） */
 .dialog-backdrop {
   position: fixed;
@@ -753,6 +703,14 @@ h1 {
 @media (max-width: 640px) {
   .file-list-container {
     padding: 1rem;
+  }
+
+  .file-list-header {
+    flex-wrap: wrap;
+  }
+
+  .download-all-btn {
+    flex: 1 1 100%;
   }
 
   .send-box {
