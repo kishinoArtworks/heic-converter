@@ -631,3 +631,9 @@ h1 {
 .file-name {
   overflow-wrap: anywhere;
 }
+
+/* 文節ごとに塊で扱い、語の途中ではなく意味の切れ目で折り返させる */
+.privacy-note span,
+.subtitle span {
+  display: inline-block;
+}

@@ -229,8 +229,18 @@ function App() {
           <img src="./icon-192.png" alt="変幻" className="logo-img" width={72} height={72} />
         </h1>
         <p className="tagline">画像形式、変幻自在。</p>
-        <p className="subtitle">HEIC・JPG・PNG・WebPなどの画像やPDFをドロップして、ボタン一発でPNG・JPG・WebP・GIFに変換します。PDFは1ページずつ画像になります。</p>
-        <p className="privacy-note">変換はこのブラウザの中だけで完結します。画像はどこにも送信されません。</p>
+        <p className="subtitle">
+          <span>HEIC・JPG・PNG・WebPなどの</span>
+          <span>画像やPDFをドロップして、</span>
+          <span>ボタン一発でPNG・JPG・WebP・GIFに</span>
+          <span>変換します。</span>
+          <span>PDFは1ページずつ</span>
+          <span>画像になります。</span>
+        </p>
+        <p className="privacy-note">
+          <span>変換はこのブラウザの中だけで完結します。</span>
+          <span>画像はどこにも送信されません。</span>
+        </p>
       </header>
 
       <main className="main-content">
@@ -484,8 +494,6 @@ function App() {
 
       <footer className="footer">
         作った人: <a href="https://x.com/_kishino" target="_blank" rel="noopener noreferrer">kishino (@_kishino)</a>
-        <span className="sep">／</span>
-        <a href="https://github.com/kishinoArtworks/heic-converter" target="_blank" rel="noopener noreferrer">ソースコード</a>
       </footer>
     </div>
   );
