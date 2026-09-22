@@ -770,3 +770,26 @@ h1 {
 .dialog-btn.danger:hover {
   background: var(--danger-soft);
 }
+
+/* 保存が済んだときの知らせ。Safari の下部バーに隠れないよう上に出す */
+.toast {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  padding: 0.7rem 1.3rem;
+  border-radius: 999px;
+  background: var(--text-main);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 6px 20px rgba(59, 54, 48, 0.25);
+  animation: toastIn 0.2s ease-out;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translate(-50%, -8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}

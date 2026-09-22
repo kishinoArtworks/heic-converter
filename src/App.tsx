@@ -139,6 +139,7 @@ function App() {
   const [linkError, setLinkError] = useState<string | null>(null);
   const [isReadingPdf, setIsReadingPdf] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -338,7 +339,7 @@ function App() {
 
   // iOS Safari はダウンロードを「プレビューで開く」に変えてしまうので、
   // 共有メニューに渡して「"ファイル"に保存」「画像を保存」を選んでもらう
-  const deliver = async (items: { blob: Blob; name: string }[]) => {
+  const deliver = async (items: { blob: Blob; name: string }[], doneMessage?: string) => {
     if (items.length === 0) return;
 
     if (isIOS()) {
@@ -346,6 +347,7 @@ function App() {
       if (navigator.canShare?.({ files: payload })) {
         try {
           await navigator.share({ files: payload });
+          if (doneMessage) setToast(doneMessage);
           return;
         } catch (err: unknown) {
           if ((err as { name?: string })?.name === 'AbortError') return;
@@ -366,11 +368,20 @@ function App() {
     const ext = extOf(format);
 
     if (filesToDownload.length === 1 || downloadMethod === 'multiple' || forceIndividual) {
-      await deliver(filesToDownload.map(item => ({ blob: item.blob!, name: `${item.baseName}.${ext}` })));
+      await deliver(
+        filesToDownload.map(item => ({ blob: item.blob!, name: `${item.baseName}.${ext}` })),
+        '「写真」に保存しました',
+      );
     } else if (downloadMethod === 'zip') {
       await deliver([{ blob: await buildZip(filesToDownload), name: ZIP_NAME }]);
     }
   };
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 2600);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   // 変換が済んだあとに ZIP へ切り替えた場合も、その場でまとめて保存できるようにする
   useEffect(() => {
@@ -716,6 +727,8 @@ function App() {
 
         </div>
       </main>
+
+      {toast && <div className="toast" role="status">{toast}</div>}
 
       {linkEditor && (
         <div className="dialog-backdrop" role="dialog" aria-modal="true">
