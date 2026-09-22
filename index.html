@@ -25,5 +25,16 @@
         window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}); });
       }
     </script>
+    <!-- Cloudflare Web Analytics（ページの閲覧数のみ。画像は従来どおり端末内で処理し送信しない）
+         公開先でだけ読み込む。localhost では CORS で弾かれ、開発中のコンソールが汚れるため。 -->
+    <script>
+      if (location.hostname.endsWith('github.io')) {
+        const beacon = document.createElement('script');
+        beacon.type = 'module';
+        beacon.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+        beacon.setAttribute('data-cf-beacon', '{"token": "567b33246e3d418b99d0263176b1800d"}');
+        document.head.appendChild(beacon);
+      }
+    </script>
   </body>
 </html>
