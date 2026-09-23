@@ -4,6 +4,8 @@ import { UploadCloud, Image as ImageIcon, FileText, Loader2, Download, Trash2, C
 import { FORMATS, PNG_COLORS, GIF_COLORS, INPUT_EXT, PDF_EXT, ACCEPT, PDF_SCALES, extOf, convertImage, convertCanvas, loadPdf } from './convert';
 import type { Format, PdfDoc } from './convert';
 import Guide from './Guide';
+import NotifyCard from './NotifyCard';
+import { countConversion, shouldShowNotify } from './notify';
 import './App.css';
 
 // タブはアドレスの # で覚える。#guide なら「使い方」を開いた状態で直接リンクできる
@@ -154,6 +156,7 @@ function App() {
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [tab, setTab] = useState<Tab>(tabFromHash);
+  const [showNotify, setShowNotify] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -305,6 +308,10 @@ function App() {
 
     const doneFiles = updatedFiles.filter(f => f.status === 'done' && f.blob);
     if (doneFiles.length === 0) return;
+
+    // お知らせの登録欄は、変換を終えて「できた」と感じた直後に出す
+    countConversion();
+    setShowNotify(shouldShowNotify());
 
     if (downloadMethod === 'multiple' && !isIOS()) {
       void downloadFiles(doneFiles);
@@ -730,6 +737,10 @@ function App() {
               </button>
             )}
           </div>
+        )}
+
+        {showNotify && files.some(f => f.status === 'done') && (
+          <NotifyCard onClose={() => setShowNotify(false)} />
         )}
 
         <div className="send-box">

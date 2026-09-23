@@ -994,3 +994,100 @@ h1 {
     display: none;
   }
 }
+
+/* 更新のお知らせの登録欄。変換の結果の下に出す */
+.notify-card {
+  margin: 1.5rem 0 0;
+  padding: 1.25rem 1rem;
+  background: var(--primary-soft);
+  border: 1px solid var(--primary-tint);
+  border-radius: 16px;
+  text-align: center;
+}
+
+.notify-card h3 {
+  margin: 0 0 0.25rem;
+  color: var(--primary-deep);
+  font-size: 1rem;
+}
+
+.notify-card p {
+  margin: 0 0 0.75rem;
+  color: var(--primary-deep);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.notify-card p span {
+  display: inline-block;
+}
+
+.notify-form {
+  display: flex;
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+.notify-form input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border-strong);
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+  background: var(--surface);
+  color: var(--text-main);
+  font-size: 16px; /* 16px 未満だと iPhone が入力時に画面を拡大する */
+}
+
+.notify-form input:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: -1px;
+}
+
+.notify-form button {
+  padding: 0.6rem 1.25rem;
+  border: none;
+  border-radius: 0 8px 8px 0;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.notify-form button:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.notify-form button:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.notify-card .notify-error {
+  margin: 0.5rem 0 0;
+  color: var(--danger);
+}
+
+.notify-card .notify-fine {
+  margin: 0.6rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.notify-close {
+  margin-top: 0.4rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.notify-close:hover {
+  color: var(--text-main);
+}
