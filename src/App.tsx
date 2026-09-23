@@ -3,7 +3,18 @@ import JSZip from 'jszip';
 import { UploadCloud, Image as ImageIcon, FileText, Loader2, Download, Trash2, CheckCircle2, Share2 } from 'lucide-react';
 import { FORMATS, PNG_COLORS, GIF_COLORS, INPUT_EXT, PDF_EXT, ACCEPT, PDF_SCALES, extOf, convertImage, convertCanvas, loadPdf } from './convert';
 import type { Format, PdfDoc } from './convert';
+import Guide from './Guide';
 import './App.css';
+
+// タブはアドレスの # で覚える。#guide なら「使い方」を開いた状態で直接リンクできる
+type Tab = 'convert' | 'guide';
+const tabFromHash = (): Tab => (window.location.hash === '#guide' ? 'guide' : 'convert');
+
+const LINKS = {
+  x: 'https://x.com/_kishino',
+  ofuse: 'https://ofuse.me/kishino',
+  wavebox: 'https://wavebox.me/wave/c0wyv3f5fsuime6s/',
+};
 
 type DownloadMethod = 'zip' | 'multiple' | 'manual';
 
@@ -142,7 +153,20 @@ function App() {
   const [toast, setToast] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [tab, setTab] = useState<Tab>(tabFromHash);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const onHash = () => setTab(tabFromHash());
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
+
+  const changeTab = (next: Tab) => {
+    setTab(next);
+    // 変換画面に戻るときは # を消して、元のアドレスに戻す
+    history.replaceState(null, '', next === 'guide' ? '#guide' : window.location.pathname + window.location.search);
+  };
 
   const colors = format === 'image/png' ? pngColors : format === 'image/gif' ? gifColors : 0;
   const canShare = typeof navigator !== 'undefined' && typeof navigator.canShare === 'function';
@@ -433,7 +457,35 @@ function App() {
         </p>
       </header>
 
-      <main className="main-content">
+      <nav className="tabs" role="tablist" aria-label="表示の切り替え">
+        <button
+          role="tab"
+          aria-selected={tab === 'convert'}
+          className={`tab ${tab === 'convert' ? 'active' : ''}`}
+          onClick={() => changeTab('convert')}
+          title="画像を変換する画面を開きます"
+        >
+          変換する
+        </button>
+        <button
+          role="tab"
+          aria-selected={tab === 'guide'}
+          className={`tab ${tab === 'guide' ? 'active' : ''}`}
+          onClick={() => changeTab('guide')}
+          title="使い方とよくある質問を開きます"
+        >
+          使い方
+        </button>
+      </nav>
+
+      {tab === 'guide' && (
+        <main className="main-content">
+          <Guide />
+        </main>
+      )}
+
+      {/* 変換画面は隠すだけにして、タブを行き来しても選んだファイルや結果を残す */}
+      <main className="main-content" hidden={tab !== 'convert'}>
         <div className="controls-panel">
           <div className="format-selector">
             <span className="label">変換フォーマット:</span>
@@ -801,7 +853,11 @@ function App() {
       )}
 
       <footer className="footer">
-        作った人: <a href="https://x.com/_kishino" target="_blank" rel="noopener noreferrer">kishino (@_kishino)</a>
+        <span>制作：<a href={LINKS.x} target="_blank" rel="noopener noreferrer" title="作者のXを新しいタブで開きます">kishino（@_kishino）</a></span>
+        <span className="sep" aria-hidden="true">｜</span>
+        <span><a href={LINKS.ofuse} target="_blank" rel="noopener noreferrer" title="OFUSEで作者を応援できます（100円から・ファンレター付き）">応援する（OFUSE）</a></span>
+        <span className="sep" aria-hidden="true">｜</span>
+        <span><a href={LINKS.wavebox} target="_blank" rel="noopener noreferrer" title="匿名で感想や要望を送れます（WAVEBOX）">意見箱（WAVEBOX）</a></span>
       </footer>
     </div>
   );

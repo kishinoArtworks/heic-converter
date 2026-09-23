@@ -793,3 +793,204 @@ h1 {
   from { opacity: 0; transform: translate(-50%, -8px); }
   to { opacity: 1; transform: translate(-50%, 0); }
 }
+
+/* 画面の切り替え（変換する／使い方）。形式の切り替えと同じ見た目にそろえる */
+[hidden] {
+  display: none !important;
+}
+
+.tabs {
+  display: inline-flex;
+  gap: 4px;
+  margin: 0 0 1rem;
+  padding: 4px;
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.tab {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 0.5rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab:hover:not(.active) {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.tab.active {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(107, 125, 90, 0.3);
+}
+
+/* 使い方 */
+.guide {
+  text-align: left;
+  line-height: 1.7;
+}
+
+.guide-section + .guide-section {
+  margin-top: 2rem;
+}
+
+.guide h2 {
+  margin: 0 0 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--primary-deep);
+  font-size: 1.15rem;
+}
+
+.guide h3 {
+  margin: 0 0 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.guide p {
+  margin: 0 0 0.75rem;
+}
+
+.guide-io {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.guide-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guide-chips li {
+  padding: 0.25rem 0.75rem;
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.9rem;
+}
+
+.guide-steps {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.guide-steps li + li {
+  margin-top: 0.5rem;
+}
+
+.guide-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.guide-table th,
+.guide-table td {
+  padding: 0.6rem 0.75rem;
+  border-top: 1px solid var(--border);
+  vertical-align: top;
+  text-align: left;
+}
+
+.guide-table tr:last-child th,
+.guide-table tr:last-child td {
+  border-bottom: 1px solid var(--border);
+}
+
+.guide-table th {
+  width: 6.5em;
+  background: var(--surface-soft);
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.guide-note {
+  margin-top: 0.75rem !important;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.guide-faq {
+  margin: 0;
+}
+
+.guide-faq div + div {
+  margin-top: 1rem;
+}
+
+.guide-faq dt {
+  font-weight: 600;
+}
+
+.guide-faq dt::before {
+  content: 'Q. ';
+  color: var(--primary);
+}
+
+.guide-faq dd {
+  margin: 0.25rem 0 0;
+  padding-left: 1.6em;
+  color: var(--text-main);
+}
+
+.guide p,
+.guide-steps li,
+.guide-table td,
+.guide-faq dt,
+.guide-faq dd {
+  overflow-wrap: anywhere;
+}
+
+/* ページ下のリンクは項目ごとの塊で折り返す */
+.footer span {
+  display: inline-block;
+}
+
+@media (max-width: 640px) {
+  .guide-io {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .guide-table th {
+    width: 5em;
+    padding: 0.6rem 0.5rem;
+  }
+
+  .footer .sep {
+    margin: 0 0.25rem;
+  }
+}
+
+/* 使い方の文章は文節で折り返す（Chrome・Edge。対応していないブラウザは通常の折り返し） */
+.guide {
+  word-break: auto-phrase;
+}
+
+/* スマホ幅では、ページ下のリンクを1行に1つずつ並べる（区切り線が行末に残らないように） */
+@media (max-width: 640px) {
+  .footer span {
+    display: block;
+  }
+
+  .footer span + span {
+    margin-top: 0.25rem;
+  }
+
+  .footer .sep {
+    display: none;
+  }
+}
