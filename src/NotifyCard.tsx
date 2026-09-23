@@ -77,7 +77,7 @@ export default function NotifyCard({ onClose }: { onClose: () => void }) {
         </button>
       </form>
       {state === 'error' && <p className="notify-error">{message}</p>}
-      <p className="notify-fine">画像は送られません。登録はメールアドレスだけで、いつでも配信を解除できます。</p>
+      <p className="notify-fine">画像データは送信されません。登録はメールアドレスのみで、いつでも配信停止できます。</p>
       <button className="notify-close" onClick={hideForever} title="この案内を閉じ、次からは表示しません">今後は表示しない</button>
     </div>
   );
