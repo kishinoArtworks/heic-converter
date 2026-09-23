@@ -54,13 +54,12 @@ export default function NotifyCard({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="notify-card">
-      <h3>機能を追加した際にお知らせします</h3>
-      <p>
-        <span>kishinoArtworks から、</span>
-        <span>新機能のほか、便利なツールや</span>
-        <span>AI活用の話題をお届けします。</span>
-        <span>画像は送られません。</span>
-        <span>登録はメールアドレスだけです。</span>
+      <h3>AIと便利ツールの実験工房</h3>
+      <p className="notify-body">
+        {[
+          '面倒な作業をサクッと終わらせる便利ツールを作っています。',
+          'キャラクターAI「理玄」の育成実験も発信しています。',
+        ].map(line => <span key={line}>{line}</span>)}
       </p>
       <form className="notify-form" onSubmit={e => void submit(e)} noValidate>
         <input
@@ -78,7 +77,7 @@ export default function NotifyCard({ onClose }: { onClose: () => void }) {
         </button>
       </form>
       {state === 'error' && <p className="notify-error">{message}</p>}
-      <p className="notify-fine">いつでも配信を解除できます。</p>
+      <p className="notify-fine">画像は送られません。登録はメールアドレスだけで、いつでも配信を解除できます。</p>
       <button className="notify-close" onClick={hideForever} title="この案内を閉じ、次からは表示しません">今後は表示しない</button>
     </div>
   );

@@ -1,6 +1,6 @@
 // お知らせの登録欄を出すかどうかの記録（ブラウザに覚えさせる）
 // 何度も使ってくれる人にだけ出す。閉じた人・登録した人には二度と出さない
-const SHOW_FROM = 3;
+const SHOW_FROM = 2;
 const COUNT_KEY = 'hengen.convertCount';
 const HIDE_KEY = 'hengen.notifyHidden';
 

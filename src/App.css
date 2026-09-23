@@ -1091,3 +1091,17 @@ h1 {
 .notify-close:hover {
   color: var(--text-main);
 }
+
+/* 登録欄の文は文節で折り返す */
+.notify-card {
+  word-break: auto-phrase;
+}
+
+.notify-card .notify-body {
+  max-width: 520px;
+  margin: 0 auto 0.75rem;
+}
+
+.notify-card .notify-body span {
+  display: block;
+}
