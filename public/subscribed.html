@@ -68,6 +68,8 @@
       }
       /* 1つの span が1行。幅が足りないときだけ文節で折り返す */
       p span { display: block; word-break: auto-phrase; }
+      /* 狭い画面では「の」のあとで折り返す */
+      p i { display: inline-block; font-style: normal; }
       a.back {
         display: inline-block;
         padding: 10px 24px;
@@ -88,7 +90,7 @@
       <p>
         <span>「AIと便利ツールの実験工房」から、</span>
         <span>便利ツールの公開・アップデート情報や、</span>
-        <span>キャラクターbot「AI理玄」の育成記録をお知らせします。</span>
+        <span><i>キャラクターbot「AI理玄」の</i><i>育成記録をお知らせします。</i></span>
       </p>
       <a class="back" href="./" title="画像変幻コンバーターを開きます">画像変幻コンバーターへ</a>
     </main>
