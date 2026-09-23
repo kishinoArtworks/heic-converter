@@ -46,7 +46,7 @@ export default function NotifyCard({ onClose }: { onClose: () => void }) {
     return (
       <div className="notify-card" role="status">
         <h3>確認メールを送りました</h3>
-        <p>メールの中のボタンを押すと、登録が完了します。</p>
+        <p><span>メールの中のボタンを押すと、登録が完了します。</span><span>届かないときは、迷惑メールのフォルダもご確認ください。</span></p>
         <button className="notify-close" onClick={onClose} title="この案内を閉じます">閉じる</button>
       </div>
     );
