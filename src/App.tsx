@@ -428,6 +428,8 @@ function App() {
         <p className="privacy-note">
           <span>変換はこのブラウザの中だけで完結します。</span>
           <span>画像はどこにも送信されません。</span>
+          <span>位置情報などの撮影情報も、</span>
+          <span>変換した画像には残りません。</span>
         </p>
       </header>
 

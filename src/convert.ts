@@ -50,18 +50,51 @@ interface Heic2AnyOptions {
 type Heic2Any = (options: Heic2AnyOptions) => Promise<Blob | Blob[]>;
 const heic2any = (): Heic2Any => (window as unknown as { heic2any: Heic2Any }).heic2any;
 
+// iPhone の HEIC は色の決まりが Display P3。埋め込みの色情報（ICC）の名前で見分ける。
+// 名前は UTF-16 で書かれている（Apple の書き方）ので、その並びを探す
+const DISPLAY_P3 = new Uint8Array([...'Display P3'].flatMap(ch => [0, ch.charCodeAt(0)]));
+
+async function isDisplayP3(file: File): Promise<boolean> {
+  const head = new Uint8Array(await file.slice(0, 64 * 1024).arrayBuffer());
+  outer: for (let i = 0; i <= head.length - DISPLAY_P3.length; i++) {
+    for (let j = 0; j < DISPLAY_P3.length; j++) {
+      if (head[i + j] !== DISPLAY_P3[j]) continue outer;
+    }
+    return true;
+  }
+  return false;
+}
+
+// heic2any は色の数値だけを取り出し、色の決まりを捨てる。
+// P3 の数値をそのまま使うと鮮やかさが2割ほど落ちるので、P3 として読み直して一般的な色（sRGB）に直す
+async function p3ToSrgb(bitmap: ImageBitmap): Promise<ImageBitmap> {
+  const { width, height } = bitmap;
+  const src = new OffscreenCanvas(width, height);
+  const srcCtx = src.getContext('2d')!;
+  srcCtx.drawImage(bitmap, 0, 0);
+  bitmap.close();
+  const values = srcCtx.getImageData(0, 0, width, height).data;
+  const dst = new OffscreenCanvas(width, height);
+  dst.getContext('2d', { colorSpace: 'srgb' })!
+    .putImageData(new ImageData(values, width, height, { colorSpace: 'display-p3' }), 0, 0);
+  return createImageBitmap(dst);
+}
+
 // 画像を ImageBitmap に読み込む。HEIC は heic2any でいったん PNG にしてから
 async function decode(file: File): Promise<ImageBitmap> {
   let source: Blob = file;
-  if (HEIC_EXT.test(file.name)) {
+  const heic = HEIC_EXT.test(file.name);
+  if (heic) {
     const result = await heic2any()({ blob: file, toType: 'image/png' });
     source = Array.isArray(result) ? result[0] : result;
   }
+  let bitmap: ImageBitmap;
   try {
-    return await createImageBitmap(source);
+    bitmap = await createImageBitmap(source);
   } catch {
     throw new Error('この画像を読み込めませんでした（壊れているか、未対応の形式です）');
   }
+  return heic && await isDisplayP3(file) ? p3ToSrgb(bitmap) : bitmap;
 }
 
 function draw(bitmap: ImageBitmap, whiteBackground: boolean): HTMLCanvasElement {
