@@ -5,23 +5,13 @@ import { FORMATS, PNG_COLORS, GIF_COLORS, INPUT_EXT, PDF_EXT, ACCEPT, PDF_SCALES
 import type { Format, PdfDoc } from './convert';
 import Guide from './Guide';
 import NotifyCard from './NotifyCard';
-import { countConversion, shouldShowNotify, hideNotifyForever } from './notify';
+import { countConversion, shouldShowNotify } from './notify';
 import './App.css';
 
 // タブはアドレスの # で覚える。#guide なら「使い方」を開いた状態で直接リンクできる
 type Tab = 'convert' | 'guide';
 const tabFromHash = (): Tab => (window.location.hash === '#guide' ? 'guide' : 'convert');
 
-// お知らせの確認メールで「登録する」を押すと、Kit から ?subscribed=1 付きでここに戻ってくる
-const cameFromSubscribe = () => {
-  const params = new URLSearchParams(window.location.search);
-  if (!params.has('subscribed')) return false;
-  params.delete('subscribed');
-  const query = params.toString();
-  history.replaceState(null, '', window.location.pathname + (query ? `?${query}` : '') + window.location.hash);
-  hideNotifyForever();
-  return true;
-};
 
 const LINKS = {
   x: 'https://x.com/_kishino',
@@ -168,7 +158,6 @@ function App() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [tab, setTab] = useState<Tab>(tabFromHash);
   const [showNotify, setShowNotify] = useState(false);
-  const [subscribed, setSubscribed] = useState(cameFromSubscribe);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -475,16 +464,6 @@ function App() {
           <span>変換した画像には残りません。</span>
         </p>
       </header>
-
-      {subscribed && (
-        <div className="subscribed-banner" role="status">
-          <p>
-            <span>ご登録が完了しました。</span>
-            <span>新しいツールやアップデートの情報をお届けします。</span>
-          </p>
-          <button onClick={() => setSubscribed(false)} title="このお知らせを閉じます">閉じる</button>
-        </div>
-      )}
 
       <nav className="tabs" role="tablist" aria-label="表示の切り替え">
         <button
