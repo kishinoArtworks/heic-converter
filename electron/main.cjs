@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, shell } = require('electron');
 const path = require('path');
 
 function createWindow() {
@@ -12,6 +12,21 @@ function createWindow() {
       contextIsolation: true
     },
     autoHideMenuBar: true
+  });
+
+  // 外部リンク（ストレージ・OFUSE・意見箱など）はアプリ内の窓でなく普段のブラウザで開く
+  const openOutside = (url) => {
+    if (/^(https?|mailto):/i.test(url)) shell.openExternal(url);
+  };
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    openOutside(url);
+    return { action: 'deny' };
+  });
+  win.webContents.on('will-navigate', (event, url) => {
+    if (!url.startsWith('file:')) {
+      event.preventDefault();
+      openOutside(url);
+    }
   });
 
   win.loadFile(path.join(__dirname, '../dist/index.html'));
