@@ -1,10 +1,14 @@
-const { app, BrowserWindow, shell } = require('electron');
+const { app, BrowserWindow, shell, screen } = require('electron');
 const path = require('path');
 
 function createWindow() {
+  // 起動時にページ下の欄（送り先・フッター）まで見える高さで開く。画面が低いときは画面いっぱいまで
+  const { workArea } = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
   const win = new BrowserWindow({
     width: 900,
-    height: 900,
+    height: Math.min(1320, workArea.height - 40),
+    useContentSize: true,
+    center: true,
     title: '画像変幻コンバーター',
     icon: path.join(__dirname, '../build/icon.png'),
     webPreferences: {
