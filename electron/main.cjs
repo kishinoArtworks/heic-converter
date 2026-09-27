@@ -33,6 +33,9 @@ function createWindow() {
     }
   });
 
+  // タイトルバーはアプリ名だけにする（Web版の「ブラウザ完結…」の見出しを出さない）
+  win.on('page-title-updated', (event) => event.preventDefault());
+
   win.loadFile(path.join(__dirname, '../dist/index.html'));
 }
 

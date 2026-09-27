@@ -6,6 +6,7 @@ import type { Format, PdfDoc } from './convert';
 import Guide from './Guide';
 import NotifyCard from './NotifyCard';
 import { countConversion, shouldShowNotify } from './notify';
+import { WHERE } from './platform';
 import './App.css';
 
 // タブはアドレスの # で覚える。#guide なら「使い方」を開いた状態で直接リンクできる
@@ -458,7 +459,7 @@ function App() {
           <span>画像になります。</span>
         </p>
         <p className="privacy-note">
-          <span>変換はこのブラウザの中だけで完結します。</span>
+          <span>変換は{WHERE}の中だけで完結します。</span>
           <span>画像はどこにも送信されません。</span>
           <span>位置情報などの撮影情報も、</span>
           <span>変換した画像には残りません。</span>
