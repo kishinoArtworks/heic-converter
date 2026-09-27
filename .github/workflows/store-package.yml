@@ -1,0 +1,24 @@
+# Microsoft Store 提出用のパッケージ（.appx）を作る
+# - 手動実行のみ（Actions タブの Run workflow）。成果物からダウンロードして Partner Center に提出する
+# - 署名は Store 側で行われるので、ここでは署名しない
+name: Build Store package
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  appx:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx electron-builder --win appx --x64 --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: store-package
+          path: dist-electron/*.appx

@@ -66,6 +66,18 @@
       "icon": "build/icon.ico",
       "artifactName": "hengen-converter-${version}-win-x64.${ext}"
     },
+    "appx": {
+      "identityName": "kishino.501015BF9CA50",
+      "publisher": "CN=85735B27-6AAD-4133-BB0C-73A5E834A401",
+      "publisherDisplayName": "kishino",
+      "applicationId": "HengenConverter",
+      "displayName": "画像変幻コンバーター",
+      "backgroundColor": "#f1ebe1",
+      "languages": [
+        "ja-JP"
+      ],
+      "artifactName": "hengen-converter-${version}-store.${ext}"
+    },
     "nsis": {
       "oneClick": true,
       "perMachine": false,

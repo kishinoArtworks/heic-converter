@@ -42,6 +42,22 @@ resized(64).save(os.path.join(PUB, 'favicon.png'))
 resized(512).save(os.path.join(BUILD, 'icon.png'))
 resized(256).save(os.path.join(BUILD, 'icon.ico'), sizes=[(256, 256), (128, 128), (64, 64), (48, 48), (32, 32), (16, 16)])
 
+# Microsoft Store（appx）用タイル。electron-builder は build/appx/ の画像を使う
+APPX = os.path.join(BUILD, 'appx')
+os.makedirs(APPX, exist_ok=True)
+
+def on_clear(w, h, n):
+    """透明の横長・正方形の中央にアイコンを置く（タイルの背景色は appx 設定側で塗る）"""
+    base = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    ic = resized(n)
+    base.paste(ic, ((w - n) // 2, (h - n) // 2), ic)
+    return base
+
+resized(50).save(os.path.join(APPX, 'StoreLogo.png'))
+resized(44).save(os.path.join(APPX, 'Square44x44Logo.png'))
+on_clear(150, 150, 110).save(os.path.join(APPX, 'Square150x150Logo.png'))
+on_clear(310, 150, 110).save(os.path.join(APPX, 'Wide310x150Logo.png'))
+
 # OGP 1200x630
 def gradient(size, c1, c2):
     w, h = size
