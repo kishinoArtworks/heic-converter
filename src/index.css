@@ -35,7 +35,7 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
-  background: linear-gradient(160deg, var(--bg) 0%, var(--bg-deep) 100%);
+  background: var(--bg);
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -44,6 +44,18 @@ body {
   word-break: normal;
   overflow-wrap: break-word;
   line-break: strict;
+}
+
+/* 背景のグラデーションは窓の大きさに固定する。body に直接かけるとページの長さで伸び、
+   短い「変換する」と長い「使い方」で同じ位置の色が変わってしまうため。
+   background-attachment: fixed は iOS Safari が効かないので、固定した下敷きで描く */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(160deg, var(--bg) 0%, var(--bg-deep) 100%);
+  pointer-events: none;
 }
 
 #root {
