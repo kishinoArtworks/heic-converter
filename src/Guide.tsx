@@ -1,6 +1,7 @@
 // 「使い方」タブの中身。変換画面とは別に、読み物として置く
 import { FORMATS, PDF_SCALES } from './convert';
-import { IS_APP } from './platform';
+import type { ReactNode } from 'react';
+import { IS_APP, WEB_URL } from './platform';
 
 const INPUTS = ['HEIC / HEIF（iPhoneの写真）', 'JPG', 'PNG', 'WebP', 'GIF', 'BMP', 'AVIF', 'PDF'];
 
@@ -11,7 +12,7 @@ const OUTPUT_NOTES: Record<string, string> = {
   GIF: 'アイコンや色数の少ないイラストに向いています。使える色は最大256色で、色数を減らすほどファイルが軽くなります。',
 };
 
-const FAQ: { q: string; a: string }[] = [
+const FAQ: { q: string; a: ReactNode }[] = [
   {
     q: '画像はどこかに送られますか？',
     a: IS_APP
@@ -30,6 +31,17 @@ const FAQ: { q: string; a: string }[] = [
     q: '何枚までまとめて変換できますか？',
     a: '上限は特にありませんが、数が多いと時間がかかるため、50枚を超えるときは目安の時間をお知らせします（PDF 200ページで約3分半）。',
   },
+  // Windows版ではスマホ向けにブラウザ版を案内する
+  ...(IS_APP ? [{
+    q: 'スマホでも使えますか？',
+    a: (
+      <>
+        スマホでは、ブラウザ版をお使いください。インストール不要・無料で、同じように変換できます。
+        <br />
+        <a href={WEB_URL} target="_blank" rel="noopener noreferrer" title="ブラウザ版をいつものブラウザで開きます">ブラウザ版を開く</a>
+      </>
+    ),
+  }] : []),
   // Windows版ではすでにアプリなので出さない
   ...(IS_APP ? [] : [{
     q: 'アプリとして使えますか？',

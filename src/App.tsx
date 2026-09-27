@@ -6,7 +6,7 @@ import type { Format, PdfDoc } from './convert';
 import Guide from './Guide';
 import NotifyCard from './NotifyCard';
 import { countConversion, shouldShowNotify } from './notify';
-import { WHERE } from './platform';
+import { IS_APP, WEB_URL, WHERE } from './platform';
 import './App.css';
 
 // タブはアドレスの # で覚える。#guide なら「使い方」を開いた状態で直接リンクできる
@@ -871,6 +871,12 @@ function App() {
         <span><a href={LINKS.ofuse} target="_blank" rel="noopener noreferrer" title="OFUSEで作者を応援できます（100円から・ファンレター付き）">応援する（OFUSE）</a></span>
         <span className="sep" aria-hidden="true">｜</span>
         <span><a href={LINKS.wavebox} target="_blank" rel="noopener noreferrer" title="匿名で感想や要望を送れます（WAVEBOX）">意見箱（WAVEBOX）</a></span>
+        {IS_APP && (
+          <>
+            <span className="sep" aria-hidden="true">｜</span>
+            <span><a href={WEB_URL} target="_blank" rel="noopener noreferrer" title="ブラウザ版をいつものブラウザで開きます（スマホでも使えます）">スマホ版（ブラウザ）</a></span>
+          </>
+        )}
       </footer>
     </div>
   );

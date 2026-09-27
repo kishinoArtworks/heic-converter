@@ -947,6 +947,16 @@ h1 {
   color: var(--text-main);
 }
 
+.guide-faq a {
+  color: var(--primary);
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.guide-faq a:hover {
+  color: var(--primary-hover);
+}
+
 .guide p,
 .guide-steps li,
 .guide-table td,
