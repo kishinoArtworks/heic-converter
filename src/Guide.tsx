@@ -1,7 +1,7 @@
 // 「使い方」タブの中身。変換画面とは別に、読み物として置く
 import { FORMATS, PDF_SCALES } from './convert';
 import type { ReactNode } from 'react';
-import { IS_APP, WEB_URL } from './platform';
+import { IS_APP, STORE_URL, WEB_URL } from './platform';
 
 const INPUTS = ['HEIC / HEIF（iPhoneの写真）', 'JPG', 'PNG', 'WebP', 'GIF', 'BMP', 'AVIF', 'PDF'];
 
@@ -45,7 +45,15 @@ const FAQ: { q: string; a: ReactNode }[] = [
   // Windows版ではすでにアプリなので出さない
   ...(IS_APP ? [] : [{
     q: 'アプリとして使えますか？',
-    a: 'ブラウザのメニューから「アプリをインストール」（iPhoneは「ホーム画面に追加」）を選ぶと、アプリのように起動できます。',
+    a: (
+      <>
+        ブラウザのメニューから「アプリをインストール」（iPhoneは「ホーム画面に追加」）を選ぶと、アプリのように起動できます。
+        <br />
+        Windowsをお使いの場合は、Microsoft Store版もあります。
+        <br />
+        <a href={STORE_URL} target="_blank" rel="noopener noreferrer" title="Microsoft Store のページを別タブで開きます">Microsoft Storeで入手する</a>
+      </>
+    ),
   }]),
 ];
 
